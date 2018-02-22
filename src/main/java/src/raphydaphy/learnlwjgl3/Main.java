@@ -83,21 +83,25 @@ public class Main
     {
         GL.createCapabilities();
 
-        float[] vertices = new float[]{-0.5f, 0.5f,
+        float[] vertices = new float[]{
+                -0.5f, 0.5f,
                 0.5f, 0.5f,
                 0.5f, -0.5f,
-                0.5f, -0.5f,
-                -0.5f, -0.5f,
-                -0.5f, 0.5f};
+                -0.5f, -0.5f};
 
-        float[] textureCoords = new float[]{0, 0,
+        float[] textureCoords = new float[]{
+                0, 0,
                 1, 0,
                 1, 1,
-                1, 1,
-                0, 1,
-                0, 0};
+                0, 1};
 
-        Model model = new Model(vertices, textureCoords);
+        // References to positions in vertices and texturecoords to eliminate duplication
+        int[] indices = new int[]{
+                0, 1, 2,
+                2, 3, 0};
+
+
+        Model model = new Model(vertices, textureCoords, indices);
 
         missing = new Texture("src//main/resources/missing.png");
 
