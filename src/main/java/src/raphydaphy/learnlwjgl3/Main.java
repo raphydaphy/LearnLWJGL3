@@ -85,10 +85,10 @@ public class Main
         GL.createCapabilities();
 
         float[] vertices = new float[]{
-                -0.5f, 0.5f,
-                0.5f, 0.5f,
-                0.5f, -0.5f,
-                -0.5f, -0.5f};
+                -0.5f * 10, 0.5f * 10, 0,
+                0.5f * 10, 0.5f * 10, 0,
+                0.5f * 10, -0.5f * 10, 0,
+                -0.5f * 10, -0.5f * 10, 0};
 
         float[] textureCoords = new float[]{
                 0, 0,
@@ -116,6 +116,7 @@ public class Main
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             shader.bind();
+            shader.setUniform("green", 1);
             //missing.bind();
 
             model.render();

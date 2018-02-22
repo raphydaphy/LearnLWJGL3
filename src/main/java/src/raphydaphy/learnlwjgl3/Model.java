@@ -48,7 +48,7 @@ public class Model
         glBindBuffer(GL_ARRAY_BUFFER, vertexID);
 
         // size = the amount of dimensions
-        glVertexPointer(2, GL_FLOAT, 0, 0);
+        glVertexPointer(3, GL_FLOAT, 0, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, texCoordID);
         glTexCoordPointer(2, GL_FLOAT, 0, 0);
