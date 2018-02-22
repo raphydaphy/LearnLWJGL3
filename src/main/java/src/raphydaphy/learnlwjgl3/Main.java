@@ -85,10 +85,10 @@ public class Main
         GL.createCapabilities();
 
         float[] vertices = new float[]{
-                -0.5f * 10, 0.5f * 10, 0,
-                0.5f * 10, 0.5f * 10, 0,
-                0.5f * 10, -0.5f * 10, 0,
-                -0.5f * 10, -0.5f * 10, 0};
+                -0.5f, 0.5f, 0,
+                0.5f, 0.5f, 0,
+                0.5f, -0.5f, 0,
+                -0.5f, -0.5f, 0};
 
         float[] textureCoords = new float[]{
                 0, 0,
@@ -105,7 +105,7 @@ public class Main
         Model model = new Model(vertices, textureCoords, indices);
 
         shader = new Shader("default");
-        //missing = new Texture("src//main/resources/missing.png");
+        missing = new Texture("src//main/resources/missing.png");
 
         while (!glfwWindowShouldClose(window))
         {
@@ -116,9 +116,9 @@ public class Main
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             shader.bind();
-            shader.setUniform("green", 1);
-            //missing.bind();
+            shader.setUniform("sampler", 0);
 
+            missing.bind(0);
             model.render();
 
 

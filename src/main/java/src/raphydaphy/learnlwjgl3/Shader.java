@@ -24,6 +24,7 @@ public class Shader
         glAttachShader(program, fragID);
 
         glBindAttribLocation(program, 0, "vertices");
+        glBindAttribLocation(program, 1, "textures");
 
         glLinkProgram(program);
 
@@ -63,7 +64,7 @@ public class Shader
 
         if (glGetShaderi(id, GL_COMPILE_STATUS) != 1)
         {
-            System.err.println(glGetShaderInfoLog(id));
+            System.err.println("Error compiling shader " + filename + ":\n" + glGetShaderInfoLog(id));
             System.exit(1);
         }
 
