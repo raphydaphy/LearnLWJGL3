@@ -18,6 +18,7 @@ public class Main
 
     private long window;
     private Texture missing;
+    private Shader shader;
 
     public void run()
     {
@@ -103,9 +104,8 @@ public class Main
 
         Model model = new Model(vertices, textureCoords, indices);
 
-        missing = new Texture("src//main/resources/missing.png");
-
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        shader = new Shader("default");
+        //missing = new Texture("src//main/resources/missing.png");
 
         while (!glfwWindowShouldClose(window))
         {
@@ -114,7 +114,9 @@ public class Main
             glfwPollEvents();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            missing.bind();
+
+            shader.bind();
+            //missing.bind();
 
             model.render();
 
