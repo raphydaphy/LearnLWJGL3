@@ -1,19 +1,12 @@
 package main.java.src.raphydaphy.learnlwjgl3;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.*;
-
-import static org.lwjgl.glfw.Callbacks.*;
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main
 {
@@ -29,61 +22,63 @@ public class Main
         init();
         loop();
 
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
+		Callbacks.glfwFreeCallbacks(window);
+        GLFW.glfwDestroyWindow(window);
 
-        glfwTerminate();
-        glfwSetErrorCallback(null).free();
+		GLFW. glfwTerminate();
+		GLFW.glfwSetErrorCallback(null).free();
     }
 
     private void init()
     {
         GLFWErrorCallback.createPrint(System.err).set();
 
-        if (!glfwInit())
+        if (!GLFW.glfwInit())
         {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		GLFW.glfwDefaultWindowHints();
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
+		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, 1);
+		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, 1);
 
-        window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
-        if (window == NULL)
-            throw new RuntimeException("Failed to create the GLFW window");
+        window = GLFW.glfwCreateWindow(300, 300, "Hello World!", 0, 0);
+        if (window == 0)
+		{
+			throw new RuntimeException("Failed to create the GLFW window");
+		}
 
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
+		GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
         {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-                glfwSetWindowShouldClose(window, true);
+            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
+				GLFW.glfwSetWindowShouldClose(window, true);
         });
 
-        try (MemoryStack stack = stackPush())
+        try (MemoryStack stack = MemoryStack.stackPush())
         {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
 
-            glfwGetWindowSize(window, pWidth, pHeight);
+			GLFW.glfwGetWindowSize(window, pWidth, pHeight);
 
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 
-            glfwSetWindowPos(
+			GLFW.glfwSetWindowPos(
                     window,
                     (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2
             );
         }
 
-        glfwMakeContextCurrent(window);
+		GLFW.glfwMakeContextCurrent(window);
 
-        glfwSwapInterval(1);
+		GLFW.glfwSwapInterval(1);
 
-        glfwShowWindow(window);
+		GLFW.glfwShowWindow(window);
     }
 
     private void loop()
@@ -120,13 +115,13 @@ public class Main
 
         projection.mul(scale, target);
 
-        while (!glfwWindowShouldClose(window))
+        while (!GLFW.glfwWindowShouldClose(window))
         {
-            boolean held = glfwGetKey(window, GLFW_KEY_F) == 1;
+            boolean held = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F) == 1;
 
-            glfwPollEvents();
+			GLFW.glfwPollEvents();
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
             shader.bind();
             shader.setUniform("sampler", 0);
@@ -135,9 +130,7 @@ public class Main
             missing.bind(0);
             model.render();
 
-
-            glfwSwapBuffers(window);
-
+			GLFW.glfwSwapBuffers(window);
 
         }
     }

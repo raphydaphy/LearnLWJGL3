@@ -1,19 +1,12 @@
 package main.java.src.raphydaphy.learnlwjgl3;
 
-import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 
 public class Texture
 {
@@ -43,24 +36,24 @@ public class Texture
 			height = h.get();
 		}
 
-		id = glGenTextures();
+		id = GL11.glGenTextures();
 
-		glEnable(GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-		glBindTexture(GL_TEXTURE_2D, id);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, image);
 	}
 
 	public void bind(int sampler)
 	{
 		if (sampler >= 0 && sampler <= 31)
 		{
-			glActiveTexture(GL_TEXTURE0 + sampler);
-			glBindTexture(GL_TEXTURE_2D, id);
+			GL13.glActiveTexture(GL13.GL_TEXTURE0 + sampler);
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
 		}
 	}
 }
