@@ -79,13 +79,8 @@ public class Main
                     int mouseX = (int) posX.get();
                     int mouseY = (int) posY.get();
 
-                    int screenX = (this.window.getWidth() / 2);
-                    int screenY = (this.window.getHeight() / 2);
-
-                    int worldX = Math.round((mouseX - screenX) / 16f) + 16;
-                    int worldY = Math.round((mouseY - screenY) / 16f) + 16;
-
-                    worldY = Math.abs(worldY - 32);
+                    int worldX = Math.round((mouseX - (this.window.getWidth() / 2) - (int) renderer.getCamera().getPosition().x) / 16f) + 16;
+                    int worldY = Math.abs((Math.round((mouseY - (this.window.getHeight() / 2) + (int) renderer.getCamera().getPosition().y) / 16f) + 16) - 32);
 
                     System.out.println("Right click at [" + mouseX + "," + mouseY + "] at world pos " + worldX + "," + worldY + "]");
 
@@ -119,6 +114,7 @@ public class Main
 
             while (accumulator >= interval)
             {
+                input(1f / TARGET_TPS);
                 update(1f / TARGET_TPS);
                 timer.updateTPS();
                 accumulator -= interval;
@@ -132,6 +128,26 @@ public class Main
 
             sync(TARGET_FPS);
 
+        }
+    }
+
+    private void input(float delta)
+    {
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_A) == 1)
+        {
+            renderer.getCamera().move(-5, 0, 0);
+        }
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_D) == 1)
+        {
+            renderer.getCamera().move(5, 0, 0);
+        }
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_W) == 1)
+        {
+            renderer.getCamera().move(0, 5, 0);
+        }
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_S) == 1)
+        {
+            renderer.getCamera().move(0, -5, 0);
         }
     }
 

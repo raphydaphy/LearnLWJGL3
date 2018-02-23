@@ -83,4 +83,9 @@ public class WorldRenderer
     {
         return chunk;
     }
+
+    public Camera getCamera()
+    {
+        return camera;
+    }
 }
