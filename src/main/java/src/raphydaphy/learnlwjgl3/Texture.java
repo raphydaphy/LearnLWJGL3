@@ -37,6 +37,7 @@ public class Texture
 			height = h.get();
 		}
 
+
 		id = GL11.glGenTextures();
 
 		GL11.glEnable(GL11.GL_TEXTURE_2D);

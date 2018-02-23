@@ -21,6 +21,7 @@ public class Model
 	public Model(float[] vertices, float[] texCoords, int[] indices)
 	{
 		vao = GL30.glGenVertexArrays();
+		System.out.println("Bound");
 		GL30.glBindVertexArray(vao);
 		drawCount = indices.length;
 
@@ -42,6 +43,7 @@ public class Model
 
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		System.out.println("Unbound");
 		GL30.glBindVertexArray(0);
 	}
 
@@ -66,6 +68,11 @@ public class Model
 		GL20.glDisableVertexAttribArray(1);
 		GL20.glDisableVertexAttribArray(0);
 		GL30.glBindVertexArray(0);
+	}
+
+	public int getVAO()
+	{
+		return vao;
 	}
 
 	private FloatBuffer getBuffer(float[] array)

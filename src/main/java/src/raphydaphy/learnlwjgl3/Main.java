@@ -10,10 +10,19 @@ import java.nio.*;
 
 public class Main
 {
+    private static final int TARGET_FPS = 60;
+    private static final int TARGET_TPS = 40;
 
     private long window;
-    private Texture missing;
+
+    private Model model;
+    private Timer timer;
     private Shader shader;
+    private Camera camera;
+    private Texture missing;
+
+    private Matrix4f scale;
+    private Matrix4f target;
 
     public void run()
     {
@@ -22,11 +31,11 @@ public class Main
         init();
         loop();
 
-		Callbacks.glfwFreeCallbacks(window);
+        Callbacks.glfwFreeCallbacks(window);
         GLFW.glfwDestroyWindow(window);
 
-		GLFW. glfwTerminate();
-		GLFW.glfwSetErrorCallback(null).free();
+        GLFW.glfwTerminate();
+        GLFW.glfwSetErrorCallback(null).free();
     }
 
     private void init()
@@ -38,24 +47,24 @@ public class Main
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-		GLFW.glfwDefaultWindowHints();
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+        GLFW.glfwDefaultWindowHints();
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
-		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, 1);
-		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, 1);
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, 1);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, 1);
 
-        window = GLFW.glfwCreateWindow(300, 300, "Hello World!", 0, 0);
+        window = GLFW.glfwCreateWindow(640, 480, "Hello World!", 0, 0);
         if (window == 0)
-		{
-			throw new RuntimeException("Failed to create the GLFW window");
-		}
+        {
+            throw new RuntimeException("Failed to create the GLFW window");
+        }
 
-		GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
+        GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
         {
             if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
-				GLFW.glfwSetWindowShouldClose(window, true);
+                GLFW.glfwSetWindowShouldClose(window, true);
         });
 
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -63,26 +72,25 @@ public class Main
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
 
-			GLFW.glfwGetWindowSize(window, pWidth, pHeight);
+            GLFW.glfwGetWindowSize(window, pWidth, pHeight);
 
             GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 
-			GLFW.glfwSetWindowPos(
+            GLFW.glfwSetWindowPos(
                     window,
                     (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2
             );
         }
 
-		GLFW.glfwMakeContextCurrent(window);
+        GLFW.glfwMakeContextCurrent(window);
 
-		GLFW.glfwSwapInterval(1);
+        GLFW.glfwSwapInterval(1);
 
-		GLFW.glfwShowWindow(window);
-    }
+        GLFW.glfwShowWindow(window);
 
-    private void loop()
-    {
+        timer = new Timer();
+
         GL.createCapabilities();
 
         float[] vertices = new float[]{
@@ -103,35 +111,98 @@ public class Main
                 2, 3, 0};
 
 
-        Model model = new Model(vertices, textureCoords, indices);
+        model = new Model(vertices, textureCoords, indices);
+
+        GL30.glBindVertexArray(model.getVAO());
 
         shader = new Shader("default");
+        camera = new Camera(640, 480);
         missing = new Texture("src//main/resources/missing.png");
 
-        Matrix4f projection = new Matrix4f().ortho2D(-640f/2, 640f/2, 480f/2, -480f/2);
-        Matrix4f scale = new Matrix4f().translate(100, 0, 0).scale(128);
+        GL30.glBindVertexArray(0);
 
-        Matrix4f target = new Matrix4f();
+        scale = new Matrix4f().translate(100, 0, 0).scale(128);
+        target = new Matrix4f();
 
-        projection.mul(scale, target);
+        camera.setPosition(-100, 0, 0);
+    }
+
+    private void loop()
+    {
+        float delta;
+        float accumulator = 0f;
+        float interval = 1f / TARGET_TPS;
+        float alpha;
 
         while (!GLFW.glfwWindowShouldClose(window))
         {
-            boolean held = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_F) == 1;
+            delta = timer.getDeltaTime();
+            accumulator += delta;
 
-			GLFW.glfwPollEvents();
+            // process input here...
 
-            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+            while (accumulator >= interval)
+            {
+                update(1f / TARGET_TPS);
+                timer.updateTPS();
+                accumulator -= interval;
+            }
 
-            shader.bind();
-            shader.setUniform("sampler", 0);
-            shader.setUniform("projection", target);
+            alpha = accumulator / interval;
+            render(alpha);
+            timer.updateFPS();
 
-            missing.bind(0);
-            model.render();
+            timer.update();
 
-			GLFW.glfwSwapBuffers(window);
+            System.out.println("FPS:" + timer.getFPS() + ", TPS: " + timer.getTPS());
 
+            sync(TARGET_FPS);
+
+
+        }
+    }
+
+    private void update(float delta)
+    {
+        camera.move(1, 0, 0);
+    }
+
+    private void render(float alpha)
+    {
+        target = scale;
+
+        GLFW.glfwPollEvents();
+
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
+        shader.bind();
+        shader.setUniform("sampler", 0);
+        shader.setUniform("projection", camera.getProjection().mul(target));
+
+        missing.bind(0);
+        model.render();
+
+        GLFW.glfwSwapBuffers(window);
+    }
+
+    private void sync(int fps)
+    {
+        double lastLoopTime = timer.getLastLoopTime();
+        double now = timer.getTime();
+        float targetTime = 1f / fps;
+
+        while (now - lastLoopTime < targetTime)
+        {
+            Thread.yield();
+
+            try
+            {
+                Thread.sleep(1);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+            now = timer.getTime();
         }
     }
 
