@@ -1,18 +1,33 @@
 package main.java.src.raphydaphy.learnlwjgl3.world;
 
-import org.joml.Matrix4d;
+import main.java.src.raphydaphy.learnlwjgl3.graphics.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class Camera
+public class Player
 {
+    private final Texture tex;
+
+    public int motionX;
+    public int motionY;
+
     private Vector3f position;
     private Matrix4f projection;
 
-    public Camera(int width, int height)
+    public Player(int width, int height)
     {
         position = new Vector3f(0, 0, 0);
         projection = new Matrix4f().ortho2D(-width / 2, width / 2, -height / 2, height / 2);
+
+        motionX = 0;
+        motionY = 0;
+
+        this.tex = new Texture("src//main/resources/player.png");
+    }
+
+    public Texture getTexture()
+    {
+        return tex;
     }
 
     public void setPosition(float x, float y, float z)
@@ -52,5 +67,10 @@ public class Camera
         target = projection.mul(pos, target);
 
         return target;
+    }
+
+    public Matrix4f getOrigin()
+    {
+        return new Matrix4f(projection);
     }
 }

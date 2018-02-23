@@ -13,6 +13,7 @@ public class Tile
 
     public static Tile AIR;
     public static Tile GRASS;
+    public static Tile DIRT;
     public static Tile HAPPY_SQUARE;
 
     public final int id;
@@ -61,6 +62,7 @@ public class Tile
 
         AIR = new Tile("air", false);
         GRASS = new Tile("grass");
+        DIRT = new Tile("dirt");
         HAPPY_SQUARE = new Tile("happy_square");
 
         GL30.glBindVertexArray(0);

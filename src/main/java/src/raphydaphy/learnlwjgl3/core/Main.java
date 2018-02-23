@@ -1,11 +1,9 @@
 package main.java.src.raphydaphy.learnlwjgl3.core;
 
-import main.java.src.raphydaphy.learnlwjgl3.world.Camera;
+import main.java.src.raphydaphy.learnlwjgl3.world.*;
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Model;
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Shader;
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Texture;
-import main.java.src.raphydaphy.learnlwjgl3.world.Tile;
-import main.java.src.raphydaphy.learnlwjgl3.world.WorldRenderer;
 import org.joml.Matrix4f;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
@@ -70,7 +68,7 @@ public class Main
         {
             if (action == GLFW.GLFW_RELEASE)
             {
-                if (button == 1)
+                if (button < Tile.TILES.size())
                 {
                     DoubleBuffer posX = BufferUtils.createDoubleBuffer(1);
                     DoubleBuffer posY = BufferUtils.createDoubleBuffer(1);
@@ -79,14 +77,14 @@ public class Main
                     int mouseX = (int) posX.get();
                     int mouseY = (int) posY.get();
 
-                    int worldX = Math.round((mouseX - (this.window.getWidth() / 2) - (int) renderer.getCamera().getPosition().x) / 16f) + 16;
-                    int worldY = Math.abs((Math.round((mouseY - (this.window.getHeight() / 2) + (int) renderer.getCamera().getPosition().y) / 16f) + 16) - 32);
+                    int worldX = Math.round((mouseX - (this.window.getWidth() / 2) - renderer.getPlayer().getPosition().x) / renderer.getScale()) + (Chunk.CHUNK_SIZE / 2);
+                    int worldY = Math.abs((Math.round((mouseY - (this.window.getHeight() / 2) + renderer.getPlayer().getPosition().y) / renderer.getScale()) + (Chunk.CHUNK_SIZE / 2)) - Chunk.CHUNK_SIZE);
 
-                    System.out.println("Right click at [" + mouseX + "," + mouseY + "] at world pos " + worldX + "," + worldY + "]");
+                    System.out.println("Click at [" + mouseX + "," + mouseY + "] at world pos " + worldX + "," + worldY + "]");
 
                     if (renderer.getChunk().validatePos(worldX, worldY, false))
                     {
-                        renderer.getChunk().setTile(worldX, worldY, Tile.HAPPY_SQUARE);
+                        renderer.getChunk().setTile(worldX, worldY, Tile.TILES.get(button));
                     }
                 }
             }
@@ -98,6 +96,8 @@ public class Main
         renderer = new WorldRenderer(window);
 
         renderer.init();
+
+
     }
 
     private void loop()
@@ -106,6 +106,8 @@ public class Main
         float accumulator = 0f;
         float interval = 1f / TARGET_TPS;
         float alpha;
+
+        GL11.glClearColor(104 / 256f, 109 / 256f, 224 / 256f, 1);
 
         while (!GLFW.glfwWindowShouldClose(window.getID()))
         {
@@ -135,32 +137,33 @@ public class Main
     {
         if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_A) == 1)
         {
-            renderer.getCamera().move(-5, 0, 0);
+            renderer.getPlayer().motionX += 5;
         }
         if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_D) == 1)
         {
-            renderer.getCamera().move(5, 0, 0);
+            renderer.getPlayer().motionX -= 5;
         }
-        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_W) == 1)
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_SPACE) == 1)
         {
-            renderer.getCamera().move(0, 5, 0);
-        }
-        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_S) == 1)
-        {
-            renderer.getCamera().move(0, -5, 0);
+            renderer.getPlayer().motionY -= 15;
         }
     }
 
     private void update(float delta)
     {
-        //camera.move(1, 0, 0);
+        Player player = renderer.getPlayer();
+
+        player.move(player.motionX, player.motionY, 0);
+
+        player.motionX = 0;
+        player.motionY = 0;
     }
 
     private void render(float alpha)
     {
         GLFW.glfwPollEvents();
 
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
         renderer.render();
 

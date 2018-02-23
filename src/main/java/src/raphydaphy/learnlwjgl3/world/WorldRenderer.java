@@ -6,49 +6,62 @@ import main.java.src.raphydaphy.learnlwjgl3.graphics.Shader;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30;
 
+import javax.swing.text.html.parser.Entity;
+
 public class WorldRenderer
 {
     public static Model TILE_MODEL;
+    public static Model PLAYER_MODEL;
+
+    private int scale;
 
     private Window window;
     private Shader shader;
-    private Camera camera;
 
     private Chunk chunk;
+    private Player player;
 
     public WorldRenderer(Window window)
     {
-
+        scale = 64;
         this.window = window;
     }
 
     public void init()
     {
-        float[] vertices = new float[]{
+        TILE_MODEL = new Model(new float[]{-0.5f, 0.5f, 0, 0.5f, 0.5f, 0, 0.5f, -0.5f, 0, -0.5f, -0.5f, 0},
+                new float[]{0, 0, 1, 0, 1, 1, 0, 1}, new int[]{0, 1, 2, 2, 3, 0});
+
+        float[] playerModelVertices = new float[]{
                 -0.5f, 0.5f, 0,
                 0.5f, 0.5f, 0,
                 0.5f, -0.5f, 0,
-                -0.5f, -0.5f, 0};
+                -0.5f, -0.5f, 0,
+                -0.5f, 1.5f, 0,
+                0.5f, 1.5f, 0};
 
-        float[] textureCoords = new float[]{
-                0, 0,
-                1, 0,
+        float[] playerModelTextureCoords = new float[]{
+                0, 0.5f,
+                1, 0.5f,
                 1, 1,
-                0, 1};
+                0, 1,
+                0, 0,
+                1, 0};
 
-        // References to positions in vertices and texturecoords to eliminate duplication
-        int[] indices = new int[]{
+        int[] playerModelIndices = new int[]{
                 0, 1, 2,
-                2, 3, 0};
+                2, 3, 0,
+                0, 1, 4,
+                4, 1, 5};
 
-        TILE_MODEL = new Model(vertices, textureCoords, indices);
+        PLAYER_MODEL = new Model(playerModelVertices, playerModelTextureCoords, playerModelIndices);
 
         Tile.init();
+        player = new Player(window.getWidth(), window.getHeight());
 
         GL30.glBindVertexArray(TILE_MODEL.getVAO());
         chunk = new Chunk(0, 0);
         shader = new Shader("default");
-        camera = new Camera(window.getWidth(), window.getHeight());
         GL30.glBindVertexArray(0);
     }
 
@@ -67,16 +80,25 @@ public class WorldRenderer
                 {
                     Tile tile = chunk.getTile(x, y);
 
-                    Matrix4f target = new Matrix4f().scale(16).translate(x + chunk.chunkX - 16, y + chunk.chunkY - 16, 0);
+                    Matrix4f target = new Matrix4f().scale(scale).translate(x + chunk.chunkX - (Chunk.CHUNK_SIZE / 2), y + chunk.chunkY - (Chunk.CHUNK_SIZE / 2), 0);
 
-                    shader.setUniform("projection", camera.getProjection().mul(target));
+                    shader.setUniform("projection", player.getProjection().mul(target));
 
                     tile.getTex().bind(0);
                     TILE_MODEL.render();
                 }
             }
         }
+
+        GL30.glBindVertexArray(PLAYER_MODEL.getVAO());
+
+        shader.setUniform("projection", player.getOrigin().scale(scale));
+
+        player.getTexture().bind(0);
+        PLAYER_MODEL.render();
+
         GL30.glBindVertexArray(0);
+
     }
 
     public Chunk getChunk()
@@ -84,8 +106,13 @@ public class WorldRenderer
         return chunk;
     }
 
-    public Camera getCamera()
+    public int getScale()
     {
-        return camera;
+        return scale;
+    }
+
+    public Player getPlayer()
+    {
+        return player;
     }
 }
