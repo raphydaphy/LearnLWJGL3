@@ -1,89 +1,66 @@
 package main.java.src.raphydaphy.learnlwjgl3;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 
 public class Texture
 {
-    public static final String MISSING_TEXTURE = "src//main/resources/missing.png";
+	public static final String MISSING_TEXTURE = "src//main/resources/missing.png";
 
-    private int id;
-    private int width;
-    private int height;
+	private int id;
+	private int width;
+	private int height;
 
-    public Texture(String file)
-    {
-        BufferedImage bi = null;
+	public Texture(String file)
+	{
+		ByteBuffer image;
+		try (MemoryStack stack = MemoryStack.stackPush())
+		{
+			IntBuffer w = stack.mallocInt(1);
+			IntBuffer h = stack.mallocInt(1);
+			IntBuffer comp = stack.mallocInt(1);
 
-        try
-        {
-            bi = ImageIO.read(new File(file));
+			STBImage.stbi_set_flip_vertically_on_load(true);
+			image = STBImage.stbi_load(file, w, h, comp, 4);
+			if (image == null)
+			{
+				image = STBImage.stbi_load(MISSING_TEXTURE, w, h, comp, 4);
+			}
 
-        } catch (IOException e1)
-        {
-            try
-            {
-                bi = ImageIO.read(new File(MISSING_TEXTURE));
-                System.err.println("Could not load texture with resource location: " + file);
-            }
-            catch (IOException e2)
-            {
-                System.err.println("Missing texture could not be resolved at location: " + MISSING_TEXTURE);
-                System.exit(1);
-            }
-        }
+			width = w.get();
+			height = h.get();
+		}
 
-        width = bi.getWidth();
-        height = bi.getHeight();
+		id = glGenTextures();
 
-        int[] pixels = new int[width * height];
-        pixels = bi.getRGB(0, 0, width, height, null, 0, width);
+		glEnable(GL_TEXTURE_2D);
 
-        ByteBuffer tex = BufferUtils.createByteBuffer(width * height * 4);
+		glBindTexture(GL_TEXTURE_2D, id);
 
-        System.out.println(width + " : " + height);
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                int pixel = pixels[i * width + j];
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-                tex.put((byte) ((pixel >> 16) & 0xFF)); //RED
-                tex.put((byte) ((pixel >> 8) & 0xFF));  //GREEN
-                tex.put((byte) ((pixel) & 0xFF));       //BLUE
-                tex.put((byte) ((pixel >> 24) & 0xFF)); //ALPHA
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+	}
 
-            }
-        }
-
-        tex.flip();
-
-        id = glGenTextures();
-
-        glEnable(GL_TEXTURE_2D);
-
-        glBindTexture(GL_TEXTURE_2D, id);
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
-    }
-
-    public void bind(int sampler)
-    {
-        if (sampler >= 0 && sampler <= 31)
-        {
-            glActiveTexture(GL_TEXTURE0 + sampler);
-            glBindTexture(GL_TEXTURE_2D, id);
-        }
-    }
+	public void bind(int sampler)
+	{
+		if (sampler >= 0 && sampler <= 31)
+		{
+			glActiveTexture(GL_TEXTURE0 + sampler);
+			glBindTexture(GL_TEXTURE_2D, id);
+		}
+	}
 }
