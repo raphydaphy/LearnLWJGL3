@@ -15,7 +15,7 @@ public class Window
 
     public Window()
     {
-        setSize(640, 480);
+        setSize(1080, 720);
         setFullscreen(false);
     }
 

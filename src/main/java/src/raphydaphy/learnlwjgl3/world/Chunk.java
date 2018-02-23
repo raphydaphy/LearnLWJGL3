@@ -26,28 +26,33 @@ public class Chunk
 
     public Tile getTile(int innerX, int innerY)
     {
-        validatePos(innerX, innerY);
+        validatePos(innerX, innerY, true);
         return Tile.TILES.get(tiles[innerX][innerY]);
     }
 
     public boolean isAir(int innerX, int innerY)
     {
-        validatePos(innerX, innerY);
+        validatePos(innerX, innerY, true);
         return tiles[innerX][innerY] == Tile.AIR.id;
     }
 
     public void setTile(int innerX, int innerY, Tile tile)
     {
-        validatePos(innerX, innerY);
+        validatePos(innerX, innerY, true);
         tiles[innerX][innerY] = tile.id;
     }
 
-    public void validatePos(int innerX, int innerY)
+    public boolean validatePos(int innerX, int innerY, boolean crash)
     {
         if (innerX < 0 || innerY < 0 || innerX >= CHUNK_SIZE || innerY >= CHUNK_SIZE)
         {
-            System.err.println("Tried to access tile at invalid chunk coordinate [" + innerX + ", " + innerY + "]");
-            System.exit(1);
+            if (crash)
+            {
+                System.err.println("Tried to access tile at invalid chunk coordinate [" + innerX + ", " + innerY + "]");
+                System.exit(1);
+            }
+            return false;
         }
+        return true;
     }
 }

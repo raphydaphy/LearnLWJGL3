@@ -68,6 +68,7 @@ public class WorldRenderer
                     Tile tile = chunk.getTile(x, y);
 
                     Matrix4f target = new Matrix4f().scale(16).translate(x + chunk.chunkX - 16, y + chunk.chunkY - 16, 0);
+
                     shader.setUniform("projection", camera.getProjection().mul(target));
 
                     tile.getTex().bind(0);

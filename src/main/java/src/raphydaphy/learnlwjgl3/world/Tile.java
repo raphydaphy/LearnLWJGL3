@@ -50,6 +50,11 @@ public class Tile
         return tex;
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
     public static void init()
     {
         GL30.glBindVertexArray(WorldRenderer.TILE_MODEL.getVAO());

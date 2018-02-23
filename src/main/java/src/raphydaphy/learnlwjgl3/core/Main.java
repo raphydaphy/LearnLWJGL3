@@ -11,6 +11,7 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
+import java.nio.DoubleBuffer;
 import java.util.Random;
 
 public class Main
@@ -65,6 +66,36 @@ public class Main
             }
         });
 
+        GLFW.glfwSetMouseButtonCallback(window.getID(), (window, button, action, mods) ->
+        {
+            if (action == GLFW.GLFW_RELEASE)
+            {
+                if (button == 1)
+                {
+                    DoubleBuffer posX = BufferUtils.createDoubleBuffer(1);
+                    DoubleBuffer posY = BufferUtils.createDoubleBuffer(1);
+                    GLFW.glfwGetCursorPos(window, posX, posY);
+
+                    int mouseX = (int) posX.get();
+                    int mouseY = (int) posY.get();
+
+                    int screenX = (this.window.getWidth() / 2);
+                    int screenY = (this.window.getHeight() / 2);
+
+                    int worldX = Math.round((mouseX - screenX) / 16f) + 16;
+                    int worldY = Math.round((mouseY - screenY) / 16f) + 16;
+
+                    worldY = Math.abs(worldY - 32);
+
+                    System.out.println("Right click at [" + mouseX + "," + mouseY + "] at world pos " + worldX + "," + worldY + "]");
+
+                    if (renderer.getChunk().validatePos(worldX, worldY, false))
+                    {
+                        renderer.getChunk().setTile(worldX, worldY, Tile.HAPPY_SQUARE);
+                    }
+                }
+            }
+        });
         timer = new Timer();
 
         GL.createCapabilities();
