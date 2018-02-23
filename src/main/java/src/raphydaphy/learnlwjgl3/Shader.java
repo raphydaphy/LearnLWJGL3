@@ -47,10 +47,10 @@ public class Shader
 
 	public void setUniform(String name, int value)
 	{
-		int location =GL20. glGetUniformLocation(program, name);
+		int location = GL20.glGetUniformLocation(program, name);
 		if (location != -1)
 		{
-			GL20.glGetUniformi(location, value);
+			GL20.glUniform1i(location, value);
 		}
 	}
 

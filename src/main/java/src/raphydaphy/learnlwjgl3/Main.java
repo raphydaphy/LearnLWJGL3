@@ -109,7 +109,7 @@ public class Main
         missing = new Texture("src//main/resources/missing.png");
 
         Matrix4f projection = new Matrix4f().ortho2D(-640f/2, 640f/2, 480f/2, -480f/2);
-        Matrix4f scale = new Matrix4f().scale(128);
+        Matrix4f scale = new Matrix4f().translate(100, 0, 0).scale(128);
 
         Matrix4f target = new Matrix4f();
 
@@ -125,7 +125,6 @@ public class Main
 
             shader.bind();
             shader.setUniform("sampler", 0);
-            shader.setUniform("do_render", 1);
             shader.setUniform("projection", target);
 
             missing.bind(0);

@@ -29,6 +29,7 @@ public class Texture
 			image = STBImage.stbi_load(file, w, h, comp, 4);
 			if (image == null)
 			{
+				System.err.println("Failed to load texture " + file);
 				image = STBImage.stbi_load(MISSING_TEXTURE, w, h, comp, 4);
 			}
 
