@@ -1,4 +1,4 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.graphics;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;

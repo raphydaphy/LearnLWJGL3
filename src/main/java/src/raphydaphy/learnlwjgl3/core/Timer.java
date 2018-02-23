@@ -1,4 +1,4 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.core;
 
 import org.lwjgl.glfw.GLFW;
 

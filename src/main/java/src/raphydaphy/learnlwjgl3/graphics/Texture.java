@@ -1,4 +1,4 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.graphics;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -25,7 +25,6 @@ public class Texture
 			IntBuffer h = stack.mallocInt(1);
 			IntBuffer comp = stack.mallocInt(1);
 
-			STBImage.stbi_set_flip_vertically_on_load(true);
 			image = STBImage.stbi_load(file, w, h, comp, 4);
 			if (image == null)
 			{
@@ -35,8 +34,9 @@ public class Texture
 
 			width = w.get();
 			height = h.get();
-		}
 
+
+		}
 
 		id = GL11.glGenTextures();
 

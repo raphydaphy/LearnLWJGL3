@@ -1,4 +1,4 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.core;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -81,22 +81,5 @@ public class Window
     public boolean isFullscreen()
     {
         return fullscreen;
-    }
-
-    public void setCallbacks()
-    {
-        GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
-        {
-            if (action == GLFW.GLFW_RELEASE)
-            {
-                if (key == GLFW.GLFW_KEY_ESCAPE)
-                {
-                    GLFW.glfwSetWindowShouldClose(window, true);
-                } else if (key == GLFW.GLFW_KEY_F)
-                {
-
-                }
-            }
-        });
     }
 }

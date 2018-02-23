@@ -1,12 +1,17 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.core;
 
+import main.java.src.raphydaphy.learnlwjgl3.world.Camera;
+import main.java.src.raphydaphy.learnlwjgl3.graphics.Model;
+import main.java.src.raphydaphy.learnlwjgl3.graphics.Shader;
+import main.java.src.raphydaphy.learnlwjgl3.graphics.Texture;
+import main.java.src.raphydaphy.learnlwjgl3.world.Tile;
+import main.java.src.raphydaphy.learnlwjgl3.world.WorldRenderer;
 import org.joml.Matrix4f;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
 
-import java.nio.*;
+import java.util.Random;
 
 public class Main
 {
@@ -14,14 +19,8 @@ public class Main
     private static final int TARGET_TPS = 40;
 
     private Window window;
-    private Model model;
     private Timer timer;
-    private Shader shader;
-    private Camera camera;
-    private Texture missing;
-
-    private Matrix4f scale;
-    private Matrix4f target;
+    private WorldRenderer renderer;
 
     public void run()
     {
@@ -47,45 +46,32 @@ public class Main
         }
 
         window = new Window();
-        window.createWindow("Learn LWJGL3");
-        window.setCallbacks();
+        window.createWindow("Automania");
+
+        GLFW.glfwSetKeyCallback(window.getID(), (window, key, scancode, action, mods) ->
+        {
+            if (action == GLFW.GLFW_RELEASE)
+            {
+                if (key == GLFW.GLFW_KEY_ESCAPE)
+                {
+                    GLFW.glfwSetWindowShouldClose(window, true);
+                }
+            }
+            if (key == GLFW.GLFW_KEY_P)
+            {
+                Random rand = new Random();
+
+                renderer.getChunk().setTile(rand.nextInt(32), rand.nextInt(32), Tile.GRASS);
+            }
+        });
 
         timer = new Timer();
 
         GL.createCapabilities();
 
-        float[] vertices = new float[]{
-                -0.5f, 0.5f, 0,
-                0.5f, 0.5f, 0,
-                0.5f, -0.5f, 0,
-                -0.5f, -0.5f, 0};
+        renderer = new WorldRenderer(window);
 
-        float[] textureCoords = new float[]{
-                0, 0,
-                1, 0,
-                1, 1,
-                0, 1};
-
-        // References to positions in vertices and texturecoords to eliminate duplication
-        int[] indices = new int[]{
-                0, 1, 2,
-                2, 3, 0};
-
-
-        model = new Model(vertices, textureCoords, indices);
-
-        GL30.glBindVertexArray(model.getVAO());
-
-        shader = new Shader("default");
-        camera = new Camera(window.getWidth(), window.getHeight());
-        missing = new Texture("src//main/resources/missing.png");
-
-        GL30.glBindVertexArray(0);
-
-        scale = new Matrix4f().translate(100, 0, 0).scale(128);
-        target = new Matrix4f();
-
-        camera.setPosition(-100, 0, 0);
+        renderer.init();
     }
 
     private void loop()
@@ -99,8 +85,6 @@ public class Main
         {
             delta = timer.getDeltaTime();
             accumulator += delta;
-
-            // process input here...
 
             while (accumulator >= interval)
             {
@@ -122,23 +106,16 @@ public class Main
 
     private void update(float delta)
     {
-        camera.move(1, 0, 0);
+        //camera.move(1, 0, 0);
     }
 
     private void render(float alpha)
     {
-        target = scale;
-
         GLFW.glfwPollEvents();
 
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-        shader.bind();
-        shader.setUniform("sampler", 0);
-        shader.setUniform("projection", camera.getProjection().mul(target));
-
-        missing.bind(0);
-        model.render();
+        renderer.render();
 
         GLFW.glfwSwapBuffers(window.getID());
     }

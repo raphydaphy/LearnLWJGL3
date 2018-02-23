@@ -1,4 +1,4 @@
-package main.java.src.raphydaphy.learnlwjgl3;
+package main.java.src.raphydaphy.learnlwjgl3.world;
 
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
