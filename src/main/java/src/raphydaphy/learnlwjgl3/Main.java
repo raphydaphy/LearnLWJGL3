@@ -48,12 +48,7 @@ public class Main
 
         window = new Window();
         window.createWindow("Learn LWJGL3");
-
-        GLFW.glfwSetKeyCallback(window.getID(), (window, key, scancode, action, mods) ->
-        {
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
-                GLFW.glfwSetWindowShouldClose(window, true);
-        });
+        window.setCallbacks();
 
         timer = new Timer();
 
@@ -82,7 +77,7 @@ public class Main
         GL30.glBindVertexArray(model.getVAO());
 
         shader = new Shader("default");
-        camera = new Camera(640, 480);
+        camera = new Camera(window.getWidth(), window.getHeight());
         missing = new Texture("src//main/resources/missing.png");
 
         GL30.glBindVertexArray(0);

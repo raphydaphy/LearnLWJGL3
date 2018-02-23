@@ -1,6 +1,7 @@
 package main.java.src.raphydaphy.learnlwjgl3;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 
@@ -10,10 +11,12 @@ public class Window
 {
     private long window;
     private int width, height;
+    private boolean fullscreen;
 
     public Window()
     {
         setSize(640, 480);
+        setFullscreen(false);
     }
 
     public void createWindow(String title)
@@ -26,26 +29,27 @@ public class Window
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, 1);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, 1);
 
-        window = GLFW.glfwCreateWindow(width, height, title, 0, 0);
+        window = GLFW.glfwCreateWindow(getWidth(), getHeight(), title, fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0, 0);
         if (window == 0)
         {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
-        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+        if (!fullscreen)
+        {
+            GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 
-        GLFW.glfwSetWindowPos(
-                window,
-                (vidMode.width() - width) / 2,
-                (vidMode.height() - height) / 2
-        );
+            GLFW.glfwSetWindowPos(
+                    window,
+                    (vidMode.width() - getWidth()) / 2,
+                    (vidMode.height() - getHeight()) / 2
+            );
 
+            GLFW.glfwShowWindow(window);
+        }
 
         GLFW.glfwMakeContextCurrent(window);
-
         GLFW.glfwSwapInterval(1);
-
-        GLFW.glfwShowWindow(window);
     }
 
     public long getID()
@@ -61,11 +65,38 @@ public class Window
 
     public int getWidth()
     {
-        return this.width;
+        return fullscreen ? GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor()).width() : this.width;
     }
 
     public int getHeight()
     {
-        return this.height;
+        return fullscreen ? GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor()).height() : this.height;
+    }
+
+    public void setFullscreen(boolean fullscreen)
+    {
+        this.fullscreen = fullscreen;
+    }
+
+    public boolean isFullscreen()
+    {
+        return fullscreen;
+    }
+
+    public void setCallbacks()
+    {
+        GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
+        {
+            if (action == GLFW.GLFW_RELEASE)
+            {
+                if (key == GLFW.GLFW_KEY_ESCAPE)
+                {
+                    GLFW.glfwSetWindowShouldClose(window, true);
+                } else if (key == GLFW.GLFW_KEY_F)
+                {
+
+                }
+            }
+        });
     }
 }
