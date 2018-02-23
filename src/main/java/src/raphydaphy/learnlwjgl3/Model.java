@@ -8,11 +8,12 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 public class Model
 {
     private int drawCount;
-
+    private int vao;
 
     private int vertexID;
     private int texCoordID;
@@ -20,6 +21,8 @@ public class Model
 
     public Model(float[] vertices, float[] texCoords, int[] indices)
     {
+        vao = glGenVertexArrays();
+        glBindVertexArray(vao);
         drawCount = indices.length;
 
         vertexID = glGenBuffers();
@@ -40,10 +43,12 @@ public class Model
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 
     public void render()
     {
+        glBindVertexArray(vao);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
@@ -61,6 +66,7 @@ public class Model
 
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(0);
+        glBindVertexArray(0);
     }
 
     private FloatBuffer getBuffer(float[] array)
