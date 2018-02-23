@@ -125,6 +125,7 @@ public class Main
 
             shader.bind();
             shader.setUniform("sampler", 0);
+            shader.setUniform("do_render", 1);
             shader.setUniform("projection", target);
 
             missing.bind(0);
