@@ -13,8 +13,7 @@ public class Main
     private static final int TARGET_FPS = 60;
     private static final int TARGET_TPS = 40;
 
-    private long window;
-
+    private Window window;
     private Model model;
     private Timer timer;
     private Shader shader;
@@ -31,8 +30,8 @@ public class Main
         init();
         loop();
 
-        Callbacks.glfwFreeCallbacks(window);
-        GLFW.glfwDestroyWindow(window);
+        Callbacks.glfwFreeCallbacks(window.getID());
+        GLFW.glfwDestroyWindow(window.getID());
 
         GLFW.glfwTerminate();
         GLFW.glfwSetErrorCallback(null).free();
@@ -47,47 +46,14 @@ public class Main
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        GLFW.glfwDefaultWindowHints();
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, 1);
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, 1);
+        window = new Window();
+        window.createWindow("Learn LWJGL3");
 
-        window = GLFW.glfwCreateWindow(640, 480, "Hello World!", 0, 0);
-        if (window == 0)
-        {
-            throw new RuntimeException("Failed to create the GLFW window");
-        }
-
-        GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
+        GLFW.glfwSetKeyCallback(window.getID(), (window, key, scancode, action, mods) ->
         {
             if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE)
                 GLFW.glfwSetWindowShouldClose(window, true);
         });
-
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            IntBuffer pWidth = stack.mallocInt(1);
-            IntBuffer pHeight = stack.mallocInt(1);
-
-            GLFW.glfwGetWindowSize(window, pWidth, pHeight);
-
-            GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-
-            GLFW.glfwSetWindowPos(
-                    window,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
-            );
-        }
-
-        GLFW.glfwMakeContextCurrent(window);
-
-        GLFW.glfwSwapInterval(1);
-
-        GLFW.glfwShowWindow(window);
 
         timer = new Timer();
 
@@ -134,7 +100,7 @@ public class Main
         float interval = 1f / TARGET_TPS;
         float alpha;
 
-        while (!GLFW.glfwWindowShouldClose(window))
+        while (!GLFW.glfwWindowShouldClose(window.getID()))
         {
             delta = timer.getDeltaTime();
             accumulator += delta;
@@ -154,10 +120,7 @@ public class Main
 
             timer.update();
 
-            System.out.println("FPS:" + timer.getFPS() + ", TPS: " + timer.getTPS());
-
             sync(TARGET_FPS);
-
 
         }
     }
@@ -182,7 +145,7 @@ public class Main
         missing.bind(0);
         model.render();
 
-        GLFW.glfwSwapBuffers(window);
+        GLFW.glfwSwapBuffers(window.getID());
     }
 
     private void sync(int fps)
