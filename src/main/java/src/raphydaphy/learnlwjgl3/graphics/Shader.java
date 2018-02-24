@@ -70,6 +70,17 @@ public class Shader
         GL20.glUseProgram(program);
     }
 
+    public void delete()
+    {
+        GL20.glDetachShader(program, vertexID);
+        GL20.glDetachShader(program, fragID);
+
+        GL20.glDeleteShader(vertexID);
+        GL20.glDeleteShader(fragID);
+
+        GL20.glDeleteProgram(program);
+    }
+
     private int makeShader(int type, String filename)
     {
         int id = GL20.glCreateShader(type);

@@ -1,6 +1,7 @@
 package main.java.src.raphydaphy.learnlwjgl3.world;
 
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Texture;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
 
 import java.util.HashMap;
@@ -66,5 +67,16 @@ public class Tile
         HAPPY_SQUARE = new Tile("happy_square");
 
         GL30.glBindVertexArray(0);
+    }
+
+    public static void cleanup()
+    {
+        for (Tile tile : TILES.values())
+        {
+            if (tile.tex != null)
+            {
+                tile.tex.delete();
+            }
+        }
     }
 }

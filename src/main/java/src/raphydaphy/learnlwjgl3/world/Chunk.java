@@ -2,7 +2,7 @@ package main.java.src.raphydaphy.learnlwjgl3.world;
 
 public class Chunk
 {
-    public static final int CHUNK_SIZE = 32;
+    public static final int CHUNK_SIZE = 128;
 
     private int[][] tiles;
 

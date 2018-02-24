@@ -4,9 +4,8 @@ import main.java.src.raphydaphy.learnlwjgl3.core.Window;
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Model;
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Shader;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
-
-import javax.swing.text.html.parser.Entity;
 
 public class WorldRenderer
 {
@@ -14,9 +13,12 @@ public class WorldRenderer
     public static Model PLAYER_MODEL;
 
     private int scale;
+    private int view = 18;
 
     private Window window;
     private Shader shader;
+
+    private Matrix4f world;
 
     private Chunk chunk;
     private Player player;
@@ -61,34 +63,41 @@ public class WorldRenderer
 
         GL30.glBindVertexArray(TILE_MODEL.getVAO());
         chunk = new Chunk(0, 0);
+
+
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++)
+        {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
+            {
+                chunk.setTile(x, y, Tile.HAPPY_SQUARE);
+            }
+        }
         shader = new Shader("default");
         GL30.glBindVertexArray(0);
+
+        this.world = new Matrix4f().setTranslation(new Vector3f(0));
+        this.world.scale(scale);
     }
 
     public void render()
     {
         GL30.glBindVertexArray(TILE_MODEL.getVAO());
 
-        shader.bind();
-        shader.setUniform("sampler", 0);
+        int posX = (int) player.getPosition().x / (scale);
+        int posY = (int) player.getPosition().y / (scale);
 
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++)
+        for (int i = 0; i < view; i++)
         {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
+            for (int j = 0; j < view; j++)
             {
-                if (!chunk.isAir(x, y))
+                if (chunk.validatePos(i - posX - (view / 2) + 1, j + posY - (view / 2), false))
                 {
-                    Tile tile = chunk.getTile(x, y);
-
-                    Matrix4f target = new Matrix4f().scale(scale).translate(x + chunk.chunkX - (Chunk.CHUNK_SIZE / 2), y + chunk.chunkY - (Chunk.CHUNK_SIZE / 2), 0);
-
-                    shader.setUniform("projection", player.getProjection().mul(target));
-
-                    tile.getTex().bind(0);
-                    TILE_MODEL.render();
+                    Tile t = chunk.getTile(i - posX - (view / 2) + 1, j + posY - (view / 2));
+                    if (t != null) renderTile(t, i - posX - (view / 2) + 1, -j - posY + (view / 2));
                 }
             }
         }
+
 
         GL30.glBindVertexArray(PLAYER_MODEL.getVAO());
 
@@ -99,6 +108,27 @@ public class WorldRenderer
 
         GL30.glBindVertexArray(0);
 
+    }
+
+    public void renderTile(Tile tile, int x, int y)
+    {
+        shader.bind();
+
+        if (tile.getTex() != null)
+        {
+            tile.getTex().bind(0);
+
+            Matrix4f tile_pos = new Matrix4f().translate(x, y, 0);
+            Matrix4f target = new Matrix4f();
+
+            player.getProjection().mul(world, target);
+            target.mul(tile_pos);
+
+            shader.setUniform("sampler", 0);
+            shader.setUniform("projection", target);
+
+            TILE_MODEL.render();
+        }
     }
 
     public Chunk getChunk()
@@ -114,5 +144,13 @@ public class WorldRenderer
     public Player getPlayer()
     {
         return player;
+    }
+
+    public void cleanup()
+    {
+        TILE_MODEL.delete();
+        PLAYER_MODEL.delete();
+
+        shader.delete();
     }
 }

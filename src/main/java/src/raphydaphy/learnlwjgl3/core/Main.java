@@ -28,6 +28,9 @@ public class Main
         init();
         loop();
 
+        Tile.cleanup();
+        renderer.cleanup();
+
         Callbacks.glfwFreeCallbacks(window.getID());
         GLFW.glfwDestroyWindow(window.getID());
 
@@ -77,8 +80,8 @@ public class Main
                     int mouseX = (int) posX.get();
                     int mouseY = (int) posY.get();
 
-                    int worldX = Math.round((mouseX - (this.window.getWidth() / 2) - renderer.getPlayer().getPosition().x) / renderer.getScale()) + (Chunk.CHUNK_SIZE / 2);
-                    int worldY = Math.abs((Math.round((mouseY - (this.window.getHeight() / 2) + renderer.getPlayer().getPosition().y) / renderer.getScale()) + (Chunk.CHUNK_SIZE / 2)) - Chunk.CHUNK_SIZE);
+                    int worldX = Math.round((mouseX - (this.window.getWidth() / 2) - renderer.getPlayer().getPosition().x) / renderer.getScale());
+                    int worldY = Math.abs((Math.round((mouseY - (this.window.getHeight() / 2) + renderer.getPlayer().getPosition().y) / renderer.getScale())));
 
                     System.out.println("Click at [" + mouseX + "," + mouseY + "] at world pos " + worldX + "," + worldY + "]");
 
@@ -146,6 +149,10 @@ public class Main
         if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_SPACE) == 1)
         {
             renderer.getPlayer().motionY -= 15;
+        }
+        if (GLFW.glfwGetKey(window.getID(), GLFW.GLFW_KEY_LEFT_SHIFT) == 1)
+        {
+            renderer.getPlayer().motionY += 15;
         }
     }
 

@@ -81,4 +81,11 @@ public class Model
 
 		return buf;
 	}
+
+	public void delete()
+	{
+		GL15.glDeleteBuffers(vertexID);
+		GL15.glDeleteBuffers(texCoordID);
+		GL15.glDeleteBuffers(indiceID);
+	}
 }
