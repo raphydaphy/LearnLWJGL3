@@ -3,20 +3,27 @@ package main.java.src.raphydaphy.learnlwjgl3.core;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
 public class Window
 {
+
     private long window;
+
     private int width, height;
     private boolean fullscreen;
+
+    private boolean hasResized;
+    private GLFWWindowSizeCallback windowSizeCallback;
 
     public Window()
     {
         setSize(1080, 720);
         setFullscreen(false);
+        hasResized = false;
     }
 
     public void createWindow(String title)
@@ -50,6 +57,8 @@ public class Window
 
         GLFW.glfwMakeContextCurrent(window);
         GLFW.glfwSwapInterval(1);
+
+        setResizeCallback();
     }
 
     public long getID()
@@ -81,5 +90,35 @@ public class Window
     public boolean isFullscreen()
     {
         return fullscreen;
+    }
+
+    public void update()
+    {
+        hasResized = false;
+        GLFW.glfwPollEvents();
+    }
+
+    public void setResizeCallback()
+    {
+        windowSizeCallback = new GLFWWindowSizeCallback()
+        {
+            @Override
+            public void invoke(long argWindow, int argWidth, int argHeight)
+            {
+                if (argWindow == window)
+                {
+                    width = argWidth;
+                    height = argHeight;
+                    hasResized = true;
+                }
+            }
+        };
+
+        GLFW.glfwSetWindowSizeCallback(window, windowSizeCallback);
+    }
+
+    public boolean hasResized()
+    {
+        return hasResized;
     }
 }

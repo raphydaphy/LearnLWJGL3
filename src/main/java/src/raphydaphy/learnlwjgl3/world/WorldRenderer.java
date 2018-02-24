@@ -12,8 +12,9 @@ public class WorldRenderer
     public static Model TILE_MODEL;
     public static Model PLAYER_MODEL;
 
-    private int scale;
-    private int view = 18;
+    public int scale;
+    private int viewX;
+    private int viewY;
 
     private Window window;
     private Shader shader;
@@ -27,6 +28,7 @@ public class WorldRenderer
     {
         scale = 64;
         this.window = window;
+        calculateView(window);
     }
 
     public void init()
@@ -59,10 +61,12 @@ public class WorldRenderer
         PLAYER_MODEL = new Model(playerModelVertices, playerModelTextureCoords, playerModelIndices);
 
         Tile.init();
-        player = new Player(window.getWidth(), window.getHeight());
+
+        chunk = new Chunk(0, 0);
+        player = new Player(window.getWidth(), window.getHeight(), chunk);
 
         GL30.glBindVertexArray(TILE_MODEL.getVAO());
-        chunk = new Chunk(0, 0);
+
 
 
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++)
@@ -86,14 +90,14 @@ public class WorldRenderer
         int posX = (int) player.getPosition().x / (scale);
         int posY = (int) player.getPosition().y / (scale);
 
-        for (int i = 0; i < view; i++)
+        for (int i = 0; i < viewX; i++)
         {
-            for (int j = 0; j < view; j++)
+            for (int j = 0; j < viewY; j++)
             {
-                if (chunk.validatePos(i - posX - (view / 2) + 1, j + posY - (view / 2), false))
+                if (chunk.validatePos(i - posX - (viewX / 2) + 1, j + posY - (viewY / 2), false))
                 {
-                    Tile t = chunk.getTile(i - posX - (view / 2) + 1, j + posY - (view / 2));
-                    if (t != null) renderTile(t, i - posX - (view / 2) + 1, -j - posY + (view / 2));
+                    Tile t = chunk.getTile(i - posX - (viewX / 2) + 1, j + posY - (viewY / 2));
+                    if (t != null) renderTile(t, i - posX - (viewX / 2) + 1, -j - posY + (viewY / 2));
                 }
             }
         }
@@ -152,5 +156,11 @@ public class WorldRenderer
         PLAYER_MODEL.delete();
 
         shader.delete();
+    }
+
+    public void calculateView(Window window)
+    {
+        viewX = (window.getWidth() / scale) + 4;
+        viewY = (window.getHeight() / scale) + 4;
     }
 }

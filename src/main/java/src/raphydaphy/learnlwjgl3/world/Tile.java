@@ -1,7 +1,7 @@
 package main.java.src.raphydaphy.learnlwjgl3.world;
 
 import main.java.src.raphydaphy.learnlwjgl3.graphics.Texture;
-import org.lwjgl.opengl.GL15;
+import org.joml.Vector2f;
 import org.lwjgl.opengl.GL30;
 
 import java.util.HashMap;
@@ -16,6 +16,8 @@ public class Tile
     public static Tile GRASS;
     public static Tile DIRT;
     public static Tile HAPPY_SQUARE;
+
+    private boolean fullTile;
 
     public final int id;
     private final String name;
@@ -39,6 +41,8 @@ public class Tile
             this.tex = null;
         }
 
+        fullTile = true;
+
         this.register();
     }
 
@@ -57,11 +61,22 @@ public class Tile
         return name;
     }
 
+    public boolean isFullTile()
+    {
+        return this.fullTile;
+    }
+
+    public Tile setFullTile(boolean isFull)
+    {
+        this.fullTile = isFull;
+        return this;
+    }
+
     public static void init()
     {
         GL30.glBindVertexArray(WorldRenderer.TILE_MODEL.getVAO());
 
-        AIR = new Tile("air", false);
+        AIR = new Tile("air", false).setFullTile(false);
         GRASS = new Tile("grass");
         DIRT = new Tile("dirt");
         HAPPY_SQUARE = new Tile("happy_square");
@@ -79,4 +94,6 @@ public class Tile
             }
         }
     }
+
+
 }
