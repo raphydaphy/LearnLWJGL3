@@ -1,6 +1,6 @@
 package main.java.com.raphydaphy.learnlwjgl2.models;
 
-import main.java.com.raphydaphy.learnlwjgl2.textures.ModelTexture;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.textures.ModelTexture;
 
 public class TexturedModel
 {

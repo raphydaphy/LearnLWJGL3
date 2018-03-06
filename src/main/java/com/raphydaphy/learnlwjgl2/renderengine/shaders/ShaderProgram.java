@@ -1,4 +1,4 @@
-package main.java.com.raphydaphy.learnlwjgl2.shaders;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;

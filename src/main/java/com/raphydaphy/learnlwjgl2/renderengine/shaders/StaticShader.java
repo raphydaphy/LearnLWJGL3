@@ -1,6 +1,7 @@
-package main.java.com.raphydaphy.learnlwjgl2.shaders;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders;
 
 import main.java.com.raphydaphy.learnlwjgl2.render.Camera;
+import main.java.com.raphydaphy.learnlwjgl2.render.Light;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import org.lwjgl.util.vector.Matrix4f;
 
@@ -11,6 +12,10 @@ public class StaticShader extends ShaderProgram
     private int transformLocation;
     private int projectionLocation;
     private int viewLocation;
+    private int lightPositionLocation;
+    private int lightColorLocation;
+    private int shineDamperLocation;
+    private int reflectivityLocation;
 
     public StaticShader()
     {
@@ -21,9 +26,10 @@ public class StaticShader extends ShaderProgram
     protected void bindAttributes()
     {
         // The ID's here are the ID's of the vertex buffers within the vertex array
-        // Since we bound the position first, and tex_coords second, they are numbered 0 and 1
+        // The number is whatever we tell it to be in Loader#loadToVAO
         super.bindAttribute(0, "position");
         super.bindAttribute(1, "tex_coords");
+        super.bindAttribute(2, "normal");
     }
 
     @Override
@@ -32,6 +38,16 @@ public class StaticShader extends ShaderProgram
         transformLocation = super.getUniformLocation("transform");
         projectionLocation = super.getUniformLocation("projection");
         viewLocation = super.getUniformLocation("view");
+        lightPositionLocation = super.getUniformLocation("light_position");
+        lightColorLocation = super.getUniformLocation("light_color");
+        shineDamperLocation = super.getUniformLocation("shine_damper");
+        reflectivityLocation = super.getUniformLocation("reflectivity");
+    }
+
+    public void loadReflectionInfo(float damper, float reflectivity)
+    {
+        super.uniformFloat(shineDamperLocation, damper);
+        super.uniformFloat(reflectivityLocation, reflectivity);
     }
 
     public void loadTransformationMatrix(Matrix4f transform)
@@ -47,5 +63,11 @@ public class StaticShader extends ShaderProgram
     public void loadViewMatrix(Camera camera)
     {
         super.uniformMatrix4(viewLocation, MathUtils.createViewMatrix(camera));
+    }
+
+    public void loadLight(Light light)
+    {
+        super.uniformVector3(lightPositionLocation, light.getPosition());
+        super.uniformVector3(lightColorLocation, light.getColor());
     }
 }

@@ -1,14 +1,14 @@
 package main.java.com.raphydaphy.learnlwjgl2;
 
 import main.java.com.raphydaphy.learnlwjgl2.render.Camera;
+import main.java.com.raphydaphy.learnlwjgl2.render.Light;
+import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
 import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.models.TexturedModel;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.DisplayManager;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.Loader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.*;
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.Renderer;
-import main.java.com.raphydaphy.learnlwjgl2.shaders.StaticShader;
-import main.java.com.raphydaphy.learnlwjgl2.textures.ModelTexture;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders.StaticShader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.textures.ModelTexture;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -19,109 +19,33 @@ public class Main
         DisplayManager.createDisplay("LearnLWJGL3");
 
         Loader loader = new Loader();
-        StaticShader shader = new StaticShader();
-        Renderer renderer = new Renderer(shader);
 
-        float[] vertices = {
-                -0.5f, 0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, 0.5f, -0.5f,
+        RawModel model = OBJLoader.loadOBJ("stall", loader);
+        ModelTexture texture = new ModelTexture(loader.loadTexture("stall"));
+        Transform stallTransform = new Transform(new Vector3f(0, 0, -50), 0, 0, 0, 1);
+        TexturedModel stallModel = new TexturedModel(model, texture);
+        ModelTransform stall = new ModelTransform(stallTransform, stallModel);
 
-                -0.5f, 0.5f, 0.5f,
-                -0.5f, -0.5f, 0.5f,
-                0.5f, -0.5f, 0.5f,
-                0.5f, 0.5f, 0.5f,
-
-                0.5f, 0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, 0.5f,
-                0.5f, 0.5f, 0.5f,
-
-                -0.5f, 0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                -0.5f, -0.5f, 0.5f,
-                -0.5f, 0.5f, 0.5f,
-
-                -0.5f, 0.5f, 0.5f,
-                -0.5f, 0.5f, -0.5f,
-                0.5f, 0.5f, -0.5f,
-                0.5f, 0.5f, 0.5f,
-
-                -0.5f, -0.5f, 0.5f,
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, 0.5f
-
-        };
-
-        float[] texCoords = {
-
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0,
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0,
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0,
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0,
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0,
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0
+        texture.setShineDamper(10);
+        texture.setReflectivity(1);
 
 
-        };
-
-        int[] indices = {
-                0, 1, 3,
-                3, 1, 2,
-                4, 5, 7,
-                7, 5, 6,
-                8, 9, 11,
-                11, 9, 10,
-                12, 13, 15,
-                15, 13, 14,
-                16, 17, 19,
-                19, 17, 18,
-                20, 21, 23,
-                23, 21, 22
-
-        };
-
-        RawModel model = loader.loadToVAO(vertices, texCoords, indices);
-        ModelTexture texture = new ModelTexture(loader.loadTexture("hi"));
-        TexturedModel texturedModel = new TexturedModel(model, texture);
-
-        Transform transform = new Transform(new Vector3f(0, 0, -1), 0, 0, 0, 1);
+        Light sun = new Light(new Vector3f(0, 0, -20), new Vector3f(1, 1, 1));
 
         Camera camera = new Camera();
+        RenderManager renderer = new RenderManager();
 
         while (!Display.isCloseRequested())
         {
-            transform.rotate(1, 1, 0);
+            stall.getTransform().rotate(0, 0.5f, 0);
             camera.move();
-            renderer.prepare();
-            shader.bind();
-            shader.loadViewMatrix(camera);
-            renderer.render(texturedModel, transform, shader);
-            shader.unbind();
+
+            renderer.processObject(stall);
+            renderer.render(sun, camera);
             DisplayManager.updateDisplay();
         }
 
-        shader.cleanup();
+        renderer.cleanup();
         loader.cleanup();
         DisplayManager.closeDisplay();
     }

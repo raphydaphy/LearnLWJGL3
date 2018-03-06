@@ -22,7 +22,7 @@ public class Loader
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
 
-    public RawModel loadToVAO(float[] positions, float[] texCoords, int[] indices)
+    public RawModel loadToVAO(float[] positions, float[] texCoords, float[] normals, int[] indices)
     {
         // Vertex array used to store the buffers
         int vaoID = createVAO();
@@ -35,6 +35,9 @@ public class Loader
 
         // Store texture coordinates in another vertex buffer
         storeDataInAttributeList(1, 2, texCoords);
+
+        // Normals are used to calculate light by telling GL what direction the triangles are facing
+        storeDataInAttributeList(2, 3, normals);
 
         // Unbind the VAO and return a new model to prevent accidently modifying the data
         unbindVAO();
