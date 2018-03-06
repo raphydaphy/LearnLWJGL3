@@ -7,10 +7,18 @@ import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.models.TexturedModel;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.*;
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders.StaticShader;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.textures.ModelTexture;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.Loader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.ModelData;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Main
 {
@@ -19,26 +27,51 @@ public class Main
         DisplayManager.createDisplay("LearnLWJGL3");
 
         Loader loader = new Loader();
+        Random rand = new Random();
 
-        RawModel model = OBJLoader.loadOBJ("stall", loader);
-        ModelTexture texture = new ModelTexture(loader.loadTexture("stall"));
-        Transform stallTransform = new Transform(new Vector3f(0, 0, -50), 0, 0, 0, 1);
-        TexturedModel stallModel = new TexturedModel(model, texture);
+        ModelData stallData = OBJLoader.loadOBJ("stall");
+        RawModel stallRaw = loader.loadToVAO(stallData.getVertices(), stallData.getUVS(), stallData.getNormals(), stallData.getIndices());
+        Material stallMaterial = new Material(loader.loadTexture("stall"));
+        stallMaterial.setShineDamper(10);
+        stallMaterial.setReflectivity(1);
+        TexturedModel stallModel = new TexturedModel(stallRaw, stallMaterial);
+        Transform stallTransform = new Transform(new Vector3f(0, 0, -50), 0, 35, 0, 1);
         ModelTransform stall = new ModelTransform(stallTransform, stallModel);
 
-        texture.setShineDamper(10);
-        texture.setReflectivity(1);
+        ModelData treeData = OBJLoader.loadOBJ("tree");
+        RawModel treeRaw = loader.loadToVAO(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
+        Material treeMaterial = new Material(loader.loadTexture("tree"));
+        treeMaterial.setShineDamper(15);
+        treeMaterial.setReflectivity(0.5f);
+        TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
+        List<ModelTransform> trees = new ArrayList<>();
+        for (int i = 0; i < 500; i++)
+        {
+            Transform treeTransform = new Transform(new Vector3f(rand.nextInt(1600) - 800, 0, -rand.nextInt(800)), 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
+            trees.add(new ModelTransform(treeTransform, treeModel));
+        }
 
+        Material grassMaterial = new Material(loader.loadTexture("grass"));
+        Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
+        Terrain terrain1 = new Terrain(0, -1, loader, grassMaterial);
+        Terrain terrain2 = new Terrain(1, -1, loader, grassMaterial);
 
-        Light sun = new Light(new Vector3f(0, 0, -20), new Vector3f(1, 1, 1));
+        Light sun = new Light(new Vector3f(0, 15, -20), new Vector3f(1, 1, 1));
 
         Camera camera = new Camera();
         RenderManager renderer = new RenderManager();
 
         while (!Display.isCloseRequested())
         {
-            stall.getTransform().rotate(0, 0.5f, 0);
             camera.move();
+
+            renderer.processTerrain(terrain);
+            renderer.processTerrain(terrain1);
+            renderer.processTerrain(terrain2);
+
+            renderer.processObject(stall);
+
+            renderer.processSimilarObjects(trees);
 
             renderer.processObject(stall);
             renderer.render(sun, camera);

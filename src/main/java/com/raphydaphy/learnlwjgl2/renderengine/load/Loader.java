@@ -1,4 +1,4 @@
-package main.java.com.raphydaphy.learnlwjgl2.renderengine;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.load;
 
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import org.lwjgl.BufferUtils;
@@ -22,7 +22,7 @@ public class Loader
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
 
-    public RawModel loadToVAO(float[] positions, float[] texCoords, float[] normals, int[] indices)
+    public RawModel loadToVAO(float[] positions, float[] uvs, float[] normals, int[] indices)
     {
         // Vertex array used to store the buffers
         int vaoID = createVAO();
@@ -34,7 +34,7 @@ public class Loader
         storeDataInAttributeList(0, 3, positions);
 
         // Store texture coordinates in another vertex buffer
-        storeDataInAttributeList(1, 2, texCoords);
+        storeDataInAttributeList(1, 2, uvs);
 
         // Normals are used to calculate light by telling GL what direction the triangles are facing
         storeDataInAttributeList(2, 3, normals);

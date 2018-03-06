@@ -1,4 +1,4 @@
-package main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.shader;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -54,6 +54,11 @@ public abstract class ShaderProgram
         return GL20.glGetUniformLocation(programID, uniformName);
     }
 
+    protected void uniformInt(int location, int value)
+    {
+        GL20.glUniform1i(location, value);
+    }
+
     protected void uniformFloat(int location, float value)
     {
         GL20.glUniform1f(location, value);
@@ -104,7 +109,7 @@ public abstract class ShaderProgram
 
     protected void bindAttribute(int attribute, String variableName)
     {
-        // This will add the variable to the shaders, allowing you to access it using the `in` keyword in the vertex shader with the name specified here
+        // This will add the variable to the shader, allowing you to access it using the `in` keyword in the vertex shader with the name specified here
         GL20.glBindAttribLocation(programID, attribute, variableName);
     }
 

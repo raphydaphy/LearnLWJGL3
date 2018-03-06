@@ -1,13 +1,14 @@
-package main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.shader;
 
 import main.java.com.raphydaphy.learnlwjgl2.render.Camera;
 import main.java.com.raphydaphy.learnlwjgl2.render.Light;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
-public class StaticShader extends ShaderProgram
+public class ObjectShader extends ShaderProgram
 {
-    private static final String name = "src/main/resources/shaders/static";
+    private static final String name = "src/main/resources/shaders/object";
 
     private int transformLocation;
     private int projectionLocation;
@@ -16,8 +17,10 @@ public class StaticShader extends ShaderProgram
     private int lightColorLocation;
     private int shineDamperLocation;
     private int reflectivityLocation;
+    private int artificialLightingLocation;
+    private int skyColorLocation;
 
-    public StaticShader()
+    public ObjectShader()
     {
         super(name);
     }
@@ -42,6 +45,18 @@ public class StaticShader extends ShaderProgram
         lightColorLocation = super.getUniformLocation("light_color");
         shineDamperLocation = super.getUniformLocation("shine_damper");
         reflectivityLocation = super.getUniformLocation("reflectivity");
+        artificialLightingLocation = super.getUniformLocation("artificial_lighting");
+        skyColorLocation = super.getUniformLocation("sky_color");
+    }
+
+    public void loadSkyColor(Vector3f skyColor)
+    {
+        super.uniformVector3(skyColorLocation, skyColor);
+    }
+
+    public void setArtificialLighting(boolean useArtificialLighting)
+    {
+        super.uniformInt(artificialLightingLocation, useArtificialLighting == true ? 1 : 0);
     }
 
     public void loadReflectionInfo(float damper, float reflectivity)

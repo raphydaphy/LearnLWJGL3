@@ -1,11 +1,10 @@
-package main.java.com.raphydaphy.learnlwjgl2.renderengine;
+package main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer;
 
 import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
-import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import main.java.com.raphydaphy.learnlwjgl2.models.TexturedModel;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.shaders.StaticShader;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.textures.ModelTexture;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.ObjectShader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.vector.Matrix4f;
@@ -13,34 +12,17 @@ import org.lwjgl.util.vector.Matrix4f;
 import java.util.List;
 import java.util.Map;
 
-public class Renderer
+public class ObjectRenderer
 {
-    private static final float FOV = 70f;
-    private static final float NEAR_PLANE = 0.1f;
-    private static final float FAR_PLANE = 1000f;
+    private ObjectShader shader;
 
-    private Matrix4f projection;
-    private StaticShader shader;
-
-    public Renderer(StaticShader shader)
+    public ObjectRenderer(ObjectShader shader, Matrix4f projection)
     {
         this.shader = shader;
 
-        // This will prevent any triangles with normals that face away from the camera from being rendered
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glCullFace(GL11.GL_BACK);
-
-        initProjection();
         shader.bind();
         shader.loadProjectionMatrix(projection);
         shader.unbind();
-    }
-
-    public void prepare()
-    {
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glClearColor(1, 0, 0, 1);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
     }
 
     public void render(Map<TexturedModel, List<ModelTransform>> objects)
@@ -75,8 +57,17 @@ public class Renderer
         GL20.glEnableVertexAttribArray(2);
 
         // Load the reflection information from the material to the shader
-        ModelTexture texture = model.getTexture();
+        Material texture = model.getTexture();
         shader.loadReflectionInfo(texture.getShineDamper(), texture.getReflectivity());
+
+        // Set all the normals to point upwards if the material is transparent
+        shader.setArtificialLighting(texture.usesArtificialLighting());
+
+        // Disable culling if we are rendering a transparent texture to ensure that all faces are rendered
+        if (texture.isTransparent())
+        {
+            RenderManager.disableCulling();
+        }
 
         // Bind the texture to the sampler with id #0
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -85,6 +76,9 @@ public class Renderer
 
     private void unbindModel()
     {
+        // Re-enable culling in case it was disabled this batch
+        RenderManager.enableCulling();
+
         // Unbind everything to prevent it being accidently modified
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
@@ -99,26 +93,5 @@ public class Renderer
                 object.getTransform().getRotX(), object.getTransform().getRotY(), object.getTransform().getRotZ(),
                 object.getTransform().getScale());
         shader.loadTransformationMatrix(transformationMatrix);
-    }
-
-    public void initProjection()
-    {
-        // The aspect ratio of the camera, based on width and height so that it can scale depending on screen res
-        float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
-
-        float yScale = (float) (1f / Math.tan(Math.toRadians(FOV / 2f)) * aspectRatio);
-        float xScale = yScale / aspectRatio;
-
-        // The total z length which the camera can see objects within
-        float frustumLength = FAR_PLANE - NEAR_PLANE;
-
-        // Setup the matrix and use a formula to calculate a simple view frustum
-        projection = new Matrix4f();
-        projection.m00 = xScale;
-        projection.m11 = yScale;
-        projection.m22 = -((FAR_PLANE + NEAR_PLANE) / frustumLength);
-        projection.m23 = -1;
-        projection.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustumLength);
-        projection.m33 = 0;
     }
 }
