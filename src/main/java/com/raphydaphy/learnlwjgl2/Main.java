@@ -24,7 +24,7 @@ public class Main
 {
     public static void main(String[] args)
     {
-        DisplayManager.createDisplay("LearnLWJGL3");
+        DisplayManager.createDisplay("LearnLWJGL2");
 
         Loader loader = new Loader();
         Random rand = new Random();
