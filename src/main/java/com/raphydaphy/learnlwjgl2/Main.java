@@ -75,7 +75,6 @@ public class Main
 
             renderer.processObject(stall);
             renderer.render(sun, camera);
-            asdfasdfasdfasdfsadf
             DisplayManager.updateDisplay();
         }
 
