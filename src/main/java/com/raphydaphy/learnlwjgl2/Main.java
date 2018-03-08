@@ -40,9 +40,7 @@ public class Main
 
         ModelData treeData = OBJLoader.loadOBJ("tree");
         RawModel treeRaw = loader.loadToVAO(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
-        Material treeMaterial = new Material(loader.loadTexture("tree"));
-        treeMaterial.setShineDamper(15);
-        treeMaterial.setReflectivity(0.5f);
+        Material treeMaterial = new Material(loader.loadTexture("colors"));
         TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
         List<ModelTransform> trees = new ArrayList<>();
         for (int i = 0; i < 500; i++)
