@@ -1,6 +1,7 @@
 package main.java.com.raphydaphy.learnlwjgl2.renderengine;
 
 import org.lwjgl.LWJGLException;
+import org.lwjgl.Sys;
 import org.lwjgl.opengl.*;
 
 public class DisplayManager
@@ -9,6 +10,9 @@ public class DisplayManager
     private static int HEIGHT = 720;
 
     private static int FPS_CAP = 60;
+
+    private static long lastFrameTime;
+    private static float delta;
 
     public static void createDisplay(String title)
     {
@@ -31,10 +35,23 @@ public class DisplayManager
     {
         Display.sync(FPS_CAP);
         Display.update();
+        long currentTime = getCurrentTime();
+        delta = (currentTime - lastFrameTime) / 1000f;
+        lastFrameTime = currentTime;
     }
 
     public static void closeDisplay()
     {
         Display.destroy();
+    }
+
+    public static float getFrameTimeSeconds()
+    {
+        return delta;
+    }
+
+    private static long getCurrentTime()
+    {
+        return Sys.getTime() * 1000 / Sys.getTimerResolution();
     }
 }
