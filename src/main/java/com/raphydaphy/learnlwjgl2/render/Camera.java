@@ -66,9 +66,9 @@ public class Camera
         {
             distanceFromPlayer = 2;
         }
-        else if (distanceFromPlayer > 100)
+        else if (distanceFromPlayer > 25)
         {
-            distanceFromPlayer = 100;
+            distanceFromPlayer = 25;
         }
     }
 
@@ -104,7 +104,7 @@ public class Camera
     {
         Vector3f playerPos = player.data.getTransform().getPosition();
 
-        position.y = playerPos.y + verticalDist + 4.7f;
+        position.y = playerPos.y + verticalDist + 2.5f;
 
         float cameraAngle = player.data.getTransform().getRotY() + angleAroundPlayer;
 
