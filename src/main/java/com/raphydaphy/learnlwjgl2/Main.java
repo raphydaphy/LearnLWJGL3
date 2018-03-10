@@ -14,6 +14,7 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
+import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -52,8 +53,6 @@ public class Main
 
         Material grassMaterial = new Material(colors);
         Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
-        Terrain terrain1 = new Terrain(0, -1, loader, grassMaterial);
-        Terrain terrain2 = new Terrain(1, -1, loader, grassMaterial);
 
         Light sun = new Light(new Vector3f(0, 15, -20), new Vector3f(1, 1, 1));
 
@@ -66,8 +65,6 @@ public class Main
             player.move();
 
             renderer.processTerrain(terrain);
-            renderer.processTerrain(terrain1);
-            renderer.processTerrain(terrain2);
 
             renderer.processSimilarObjects(trees);
 

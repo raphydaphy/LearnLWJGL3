@@ -1,8 +1,13 @@
 package main.java.com.raphydaphy.learnlwjgl2.terrain;
 
+import main.java.com.raphydaphy.learnlwjgl2.Main;
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.Loader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
+import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
+import org.lwjgl.util.vector.Vector2f;
+
+import java.util.Random;
 
 public class Terrain
 {
@@ -52,10 +57,12 @@ public class Terrain
         float[] uvs = new float[count*2];
         int[] indices = new int[6*(VERTEX_COUNT-1)*(VERTEX_COUNT-1)];
         int vertexPointer = 0;
+
+        float[][] noiseMap = NoiseMapGenerator.generateNoiseMap(VERTEX_COUNT, 10, 8, 0.5f, 2, new Vector2f(0, 0));
         for(int i=0;i<VERTEX_COUNT;i++){
             for(int j=0;j<VERTEX_COUNT;j++){
                 vertices[vertexPointer*3] = (float)j/((float)VERTEX_COUNT - 1) * SIZE;
-                vertices[vertexPointer*3+1] = 0;
+                vertices[vertexPointer*3+1] = noiseMap[i][j] * 30;
                 vertices[vertexPointer*3+2] = (float)i/((float)VERTEX_COUNT - 1) * SIZE;
                 normals[vertexPointer*3] = 0;
                 normals[vertexPointer*3+1] = 1;
