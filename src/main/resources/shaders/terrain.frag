@@ -34,6 +34,8 @@ void main()
     float dampening_factor = pow(reflection_angle, shine_damper);
     vec3 specular = dampening_factor * reflectivity * light_color;
 
-    out_color = vec4(diffuse, 1) * texture(sampler, frag_tex_coords) + vec4(specular, 1);
+    vec4 color = vec4(0,1,0,1);
+    vec4 real_color = texture(sampler, frag_tex_coords);
+    out_color = vec4(diffuse, 1) * color + vec4(specular, 1);
     out_color = mix(vec4(sky_color, 1), out_color, visibility);
 }

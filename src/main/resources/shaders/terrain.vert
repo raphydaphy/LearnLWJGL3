@@ -25,7 +25,7 @@ void main()
 
     vec4 relative_position = view * world_position;
 	gl_Position = projection * relative_position;
-	frag_tex_coords = tex_coords * 40;
+	frag_tex_coords = tex_coords;
 
 	frag_surface_normal = (transform * vec4(normal, 0)).xyz;
 	frag_light_vector = light_position - world_position.xyz;

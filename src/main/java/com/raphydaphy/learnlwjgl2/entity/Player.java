@@ -4,6 +4,7 @@ import main.java.com.raphydaphy.learnlwjgl2.models.TexturedModel;
 import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
 import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.DisplayManager;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -13,8 +14,6 @@ public class Player
 	private static final float TURN_SPEED = 160;
 	private static final float GRAVITY = -50;
 	private static final float JUMP_POWER = 30;
-
-	private static final float GROUND = 0;
 
 	private float currentSpeed = 0;
 	private float currentTurnSpeed = 0;
@@ -29,7 +28,7 @@ public class Player
 		this.data = new ModelTransform(new Transform(position, rotX, rotY, rotZ, scale), model);
 	}
 
-	public void move()
+	public void move(Terrain terrain)
 	{
 		float delta = DisplayManager.getFrameTimeSeconds();
 
@@ -46,11 +45,12 @@ public class Player
 
 		data.getTransform().move(xMove, upwardsSpeed * delta, zMove);
 
-		if (data.getTransform().getPosition().y < GROUND)
+		float ground = terrain.getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
+		if (data.getTransform().getPosition().y < ground)
 		{
 			jumping = false;
 			upwardsSpeed = 0;
-			data.getTransform().getPosition().y = GROUND;
+			data.getTransform().getPosition().y = ground;
 		}
 
 	}

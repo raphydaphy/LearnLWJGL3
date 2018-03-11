@@ -14,6 +14,7 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
+import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
 import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
@@ -29,9 +30,12 @@ public class Main
         DisplayManager.createDisplay("LearnLWJGL2");
 
         Loader loader = new Loader();
-        Random rand = new Random();
+        Random rand = new Random(NoiseMapGenerator.SEED);
 
        int colors = loader.loadTexture("colors");
+
+	    Material grassMaterial = new Material(colors);
+	    Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
 
         ModelData treeData = OBJLoader.loadOBJ("tree");
         RawModel treeRaw = loader.loadToVAO(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
@@ -42,17 +46,16 @@ public class Main
         List<ModelTransform> trees = new ArrayList<>();
         for (int i = 0; i < 500; i++)
         {
-            Transform treeTransform = new Transform(new Vector3f(rand.nextInt(1600) - 800, -1f, -rand.nextInt(800)), 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
+        	Vector3f treePos = new Vector3f(-rand.nextInt(800), -1f, -rand.nextInt(800));
+        	treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
+            Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
             trees.add(new ModelTransform(treeTransform, treeModel));
         }
 
         ModelData playerData = OBJLoader.loadOBJ("person");
         RawModel playerRaw = loader.loadToVAO(playerData.getVertices(), playerData.getUVS(), playerData.getNormals(), playerData.getIndices());
         TexturedModel playerModel = new TexturedModel(playerRaw, new Material(colors));
-        Player player = new Player(playerModel, new Vector3f(0, 0, 0), 0, 180, 0, 0.75f);
-
-        Material grassMaterial = new Material(colors);
-        Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
+        Player player = new Player(playerModel, new Vector3f(-400, 0, -400), 0, 180, 0, 0.75f);
 
         Light sun = new Light(new Vector3f(0, 15, -20), new Vector3f(1, 1, 1));
 
@@ -62,7 +65,7 @@ public class Main
         while (!Display.isCloseRequested())
         {
             camera.move();
-            player.move();
+            player.move(terrain);
 
             renderer.processTerrain(terrain);
 
