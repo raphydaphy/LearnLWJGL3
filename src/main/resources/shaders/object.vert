@@ -6,7 +6,7 @@ in vec3 normal;
 
 out vec2 frag_tex_coords;
 out vec3 frag_surface_normal;
-out vec3 frag_light_vector;
+out vec3 frag_light_vector[4];
 out vec3 frag_camera_vector;
 out float visibility;
 
@@ -14,7 +14,7 @@ uniform mat4 transform;
 uniform mat4 projection;
 uniform mat4 view;
 
-uniform vec3 light_position;
+uniform vec3 light_position[4];
 uniform int artificial_lighting;
 
 const float fog_density = 0.005;
@@ -36,7 +36,10 @@ void main()
 	}
 
 	frag_surface_normal = (transform * vec4(actual_normal, 0)).xyz;
-	frag_light_vector = light_position - world_position.xyz;
+	for (int i = 0; i < 4; i++)
+	{
+	    frag_light_vector[i] = light_position[i] - world_position.xyz;
+	}
 	frag_camera_vector = (inverse(view) * vec4(0, 0, 0, 1)).xyz - world_position.xyz;
 
 	float camera_distance = length(relative_position.xyz);

@@ -13,6 +13,8 @@ import java.nio.FloatBuffer;
 
 public abstract class ShaderProgram
 {
+    protected static final int MAX_LIGHTS = 4;
+
     private int programID;
     private int vertexID;
     private int fragmentID;

@@ -57,7 +57,12 @@ public class Main
         TexturedModel playerModel = new TexturedModel(playerRaw, new Material(colors));
         Player player = new Player(playerModel, new Vector3f(-400, 0, -400), 0, 180, 0, 0.75f);
 
-        Light sun = new Light(new Vector3f(0, 15, -20), new Vector3f(1, 1, 1));
+        List<Light> lights = new ArrayList<>();
+
+        lights.add(new Light(new Vector3f(-400, 35, -400), new Vector3f(0.4f, 0.4f, 0.4f)));
+        lights.add(new Light(new Vector3f(-550, 35, -450), new Vector3f(2, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
+	    lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(2, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
+	    lights.add(new Light(new Vector3f(-300, 35, -450), new Vector3f(0, 0, 2), new Vector3f(1f, 0.01f, 0.002f)));
 
         Camera camera = new Camera(player);
         RenderManager renderer = new RenderManager();
@@ -72,7 +77,7 @@ public class Main
             renderer.processSimilarObjects(trees);
 
             renderer.processObject(player.data);
-            renderer.render(sun, camera);
+            renderer.render(lights, camera);
             DisplayManager.updateDisplay();
         }
 

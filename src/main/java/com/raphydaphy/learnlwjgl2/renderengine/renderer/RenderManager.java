@@ -12,10 +12,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RenderManager
 {
@@ -75,14 +72,14 @@ public class RenderManager
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
     }
 
-    public void render(Light light, Camera camera)
+    public void render(List<Light> lights, Camera camera)
     {
         prepare();
 
         objectShader.bind();
 
         objectShader.loadSkyColor(SKY);
-        objectShader.loadLight(light);
+        objectShader.loadLights(lights);
         objectShader.loadViewMatrix(camera);
 
         objectRenderer.render(objects);
@@ -92,7 +89,7 @@ public class RenderManager
         terrainShader.bind();
 
         terrainShader.loadSkyColor(SKY);
-        terrainShader.loadLight(light);
+        terrainShader.loadLights(lights);
         terrainShader.loadViewMatrix(camera);
 
         terrainRenderer.render(terrains);

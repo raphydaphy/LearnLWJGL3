@@ -122,7 +122,6 @@ public class Terrain
 			return normal;
 		}
 
-		System.out.println("using noob method");
 		return new Vector3f(0, 1, 0);
 	}
 
