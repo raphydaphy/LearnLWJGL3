@@ -104,7 +104,7 @@ public class Camera
     {
         Vector3f playerPos = player.data.getTransform().getPosition();
 
-        position.y = playerPos.y + verticalDist + 2.5f;
+        position.y = playerPos.y + verticalDist + 4f;
 
         float cameraAngle = player.data.getTransform().getRotY() + angleAroundPlayer;
 

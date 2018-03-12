@@ -52,7 +52,6 @@ public class TerrainRenderer
         // Enable the various vertex buffer arrays which we bound in Loader#storeDataInAttributeList
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
-        GL20.glEnableVertexAttribArray(2);
 
         // Load the reflection information from the material to the shader
         Material texture = terrain.getTexture();
@@ -68,7 +67,6 @@ public class TerrainRenderer
         // Unbind everything to prevent it being accidently modified
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
-        GL20.glDisableVertexAttribArray(2);
         GL30.glBindVertexArray(0);
     }
 

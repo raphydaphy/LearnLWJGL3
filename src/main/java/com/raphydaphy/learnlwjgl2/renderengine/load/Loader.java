@@ -15,143 +15,162 @@ import java.util.List;
 
 public class Loader
 {
-    private List<Integer> vaos = new ArrayList<>();
-    private List<Integer> vbos = new ArrayList<>();
-    private List<Integer> textures = new ArrayList<>();
+	private List<Integer> vaos = new ArrayList<>();
+	private List<Integer> vbos = new ArrayList<>();
+	private List<Integer> textures = new ArrayList<>();
 
-    public RawModel loadToVAO(float[] positions, float[] uvs, float[] normals, int[] indices)
-    {
-        // Vertex array used to store the buffers
-        int vaoID = createVAO();
+	public RawModel loadToModel(float[] positions, float[] uvs, float[] normals, int[] indices)
+	{
+		return new RawModel(loadToVAO(positions, 3, uvs, normals, indices), indices.length);
+	}
 
-        // Put the indices into the element buffer before storing the vertexes which the indices are for
-        bindIndexBuffer(indices);
+	public int loadToVAO(float[] positions, int positionDimensions, float[] uvs, float[] normals, int[] indices)
+	{
+		// Vertex array used to store the buffers
+		int vaoID = createVAO();
 
-        // Store the vertex positions in a vertex buffer
-        storeDataInAttributeList(0, 3, positions);
+		if (indices != null)
+		{
+			// Put the indices into the element buffer before storing the vertexes which the indices are for
+			bindIndexBuffer(indices);
+		}
 
-        // Store texture coordinates in another vertex buffer
-        storeDataInAttributeList(1, 2, uvs);
+		// Store the vertex positions in a vertex buffer
+		storeDataInAttributeList(0, positionDimensions, positions);
 
-        // Normals are used to calculate light by telling GL what direction the triangles are facing
-        storeDataInAttributeList(2, 3, normals);
+		if (normals != null)
+		{
+			// Normals are used to calculate light by telling GL what direction the triangles are facing
+			storeDataInAttributeList(1, 3, normals);
+		}
 
-        // Unbind the VAO and return a new model to prevent accidently modifying the data
-        unbindVAO();
-        return new RawModel(vaoID, indices.length);
-    }
+		if (uvs != null)
+		{
+			// Store texture coordinates in another vertex buffer
+			storeDataInAttributeList(2, 2, uvs);
+		}
 
-    private int createVAO()
-    {
-        // Generate a new vertex array and save it to the array so that it can be deleted on game close
-        int vaoID =  GL30.glGenVertexArrays();
-        vaos.add(vaoID);
+		// Unbind the VAO to prevent accidental modification
+		unbindVAO();
+		return vaoID;
+	}
 
-        // Bind the vertex array, as gl will now automatically use it whenever vertex attrib pointers are set
-        GL30.glBindVertexArray(vaoID);
-        return vaoID;
-    }
+	private int createVAO()
+	{
+		// Generate a new vertex array and save it to the array so that it can be deleted on game close
+		int vaoID = GL30.glGenVertexArrays();
+		vaos.add(vaoID);
 
-    public int loadTexture(String file)
-    {
-        // Using the SlickUtils texture loader to make things a bit easier
-        Texture texture = null;
+		// Bind the vertex array, as gl will now automatically use it whenever vertex attrib pointers are set
+		GL30.glBindVertexArray(vaoID);
+		return vaoID;
+	}
 
-        try
-        {
-            // Load the texture from the default assets folder
-            texture = TextureLoader.getTexture("PNG", new FileInputStream("src/main/resources/textures/" + file + ".png"));
-            GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, -0.4f);
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+	public int loadTexture(String filename)
+	{
+		return loadTextureExact("src/main/resources/textures/" + filename + ".png", "PNG");
+	}
 
-        // Add the texture ID to the array in order to safely delete it on shutdown and return the ID
-        int textureID = texture.getTextureID();
-        textures.add(textureID);
-        return textureID;
-    }
+	public int loadTextureExact(String file, String format)
+	{
+		// Using the SlickUtils texture loader to make things a bit easier
+		Texture texture = null;
 
-    private void storeDataInAttributeList(int attributeNumber, int dimensions, float[] data)
-    {
-        // create a vertex buffer in which to store data
-        int vboID = GL15.glGenBuffers();
-        vbos.add(vboID);
+		try
+		{
+			// Load the texture from the default assets folder
+			texture = TextureLoader.getTexture(format, new FileInputStream(file));
+			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, -0.4f);
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
+		// Add the texture ID to the array in order to safely delete it on shutdown and return the ID
+		int textureID = texture.getTextureID();
+		textures.add(textureID);
+		return textureID;
+	}
 
-        // Put the data into a FloatBuffer and upload it to the array buffer, using STATIC_DRAW since the data won't change
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, genBuffer(data), GL15.GL_STATIC_DRAW);
+	private void storeDataInAttributeList(int attributeNumber, int dimensions, float[] data)
+	{
+		// create a vertex buffer in which to store data
+		int vboID = GL15.glGenBuffers();
+		vbos.add(vboID);
 
-        // Tell opengl that we had added data to the vertex array at the specified index (attributeNumber)
-        GL20.glVertexAttribPointer(attributeNumber, dimensions, GL11.GL_FLOAT, false, 0, 0);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
 
-        // Unbind the buffer since we don't need it now that we have saved the data to the vertex array (gl uses whatever vertex array that was already bound)
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-    }
+		// Put the data into a FloatBuffer and upload it to the array buffer, using STATIC_DRAW since the data won't change
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, genBuffer(data), GL15.GL_STATIC_DRAW);
 
-    private void unbindVAO()
-    {
-        GL30.glBindVertexArray(0);
-    }
+		// Tell opengl that we had added data to the vertex array at the specified index (attributeNumber)
+		GL20.glVertexAttribPointer(attributeNumber, dimensions, GL11.GL_FLOAT, false, 0, 0);
 
-    private void bindIndexBuffer(int[] indices)
-    {
-        // We need a vertex buffer to store the indices
-        int vboID = GL15.glGenBuffers();
-        vbos.add(vboID);
+		// Unbind the buffer since we don't need it now that we have saved the data to the vertex array (gl uses whatever vertex array that was already bound)
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+	}
 
-        // We will be using the element array buffer as it is used to store indices that are mapped based on the array buffer
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboID);
+	private void unbindVAO()
+	{
+		GL30.glBindVertexArray(0);
+	}
 
-        // Put the indices into the element array buffer, in the form of a newly generated IntBuffer
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, genBuffer(indices), GL15.GL_STATIC_DRAW);
+	private void bindIndexBuffer(int[] indices)
+	{
+		// We need a vertex buffer to store the indices
+		int vboID = GL15.glGenBuffers();
+		vbos.add(vboID);
 
-    }
+		// We will be using the element array buffer as it is used to store indices that are mapped based on the array buffer
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboID);
 
-    private FloatBuffer genBuffer(float[] data)
-    {
-        // Generate a buffer to put the array points in
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
+		// Put the indices into the element array buffer, in the form of a newly generated IntBuffer
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, genBuffer(indices), GL15.GL_STATIC_DRAW);
 
-        // Add the array to the buffer, and flip it so that it can be read back in the order it was added
-        buffer.put(data);
-        buffer.flip();
+	}
 
-        return buffer;
-    }
+	private FloatBuffer genBuffer(float[] data)
+	{
+		// Generate a buffer to put the array points in
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
 
-    private IntBuffer genBuffer(int[] data)
-    {
-        IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
+		// Add the array to the buffer, and flip it so that it can be read back in the order it was added
+		buffer.put(data);
+		buffer.flip();
 
-        buffer.put(data);
-        buffer.flip();
+		return buffer;
+	}
 
-        return buffer;
-    }
+	private IntBuffer genBuffer(int[] data)
+	{
+		IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
 
-    public void cleanup()
-    {
-        for (int texture : textures)
-        {
-            // Remove the texture to save memory
-            GL11.glDeleteTextures(texture);
-        }
+		buffer.put(data);
+		buffer.flip();
 
-        for (int vao : vaos)
-        {
-            // Save memory by deleting the vertex arrays on shutdown
-            GL30.glDeleteVertexArrays(vao);
-        }
+		return buffer;
+	}
 
-        for (int vbo : vbos)
-        {
-            // Same deal for the buffers
-            GL15.glDeleteBuffers(vbo);
-        }
-    }
+	public void cleanup()
+	{
+		for (int texture : textures)
+		{
+			// Remove the texture to save memory
+			GL11.glDeleteTextures(texture);
+		}
+
+		for (int vao : vaos)
+		{
+			// Save memory by deleting the vertex arrays on shutdown
+			GL30.glDeleteVertexArrays(vao);
+		}
+
+		for (int vbo : vbos)
+		{
+			// Same deal for the buffers
+			GL15.glDeleteBuffers(vbo);
+		}
+	}
 }

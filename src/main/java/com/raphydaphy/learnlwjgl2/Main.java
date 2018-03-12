@@ -1,6 +1,8 @@
 package main.java.com.raphydaphy.learnlwjgl2;
 
 import main.java.com.raphydaphy.learnlwjgl2.entity.Player;
+import main.java.com.raphydaphy.learnlwjgl2.font.FontType;
+import main.java.com.raphydaphy.learnlwjgl2.font.GUIText;
 import main.java.com.raphydaphy.learnlwjgl2.render.Camera;
 import main.java.com.raphydaphy.learnlwjgl2.render.Light;
 import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
@@ -11,78 +13,89 @@ import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.Loader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.ModelData;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.FontRenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
 import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Main
 {
-    public static void main(String[] args)
-    {
-        DisplayManager.createDisplay("LearnLWJGL2");
+	public static void main(String[] args)
+	{
+		DisplayManager.createDisplay("LearnLWJGL2");
 
-        Loader loader = new Loader();
-        Random rand = new Random(NoiseMapGenerator.SEED);
+		Loader loader = new Loader();
+		Random rand = new Random(NoiseMapGenerator.SEED);
+		FontRenderManager.init(loader);
 
-       int colors = loader.loadTexture("colors");
+		FontType arial = new FontType(loader.loadTextureExact("src/main/resources/fonts/arial.png", "PNG"), new File("src/main/resources/fonts/arial.fnt"));
+		GUIText text = new GUIText("hello world",1, arial, new Vector2f(10, 0), 1f, true);
+		text.setColour(1, 0, 1);
+		int colors = loader.loadTexture("colors");
 
-	    Material grassMaterial = new Material(colors);
-	    Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
+		Material grassMaterial = new Material(colors);
+		Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
 
-        ModelData treeData = OBJLoader.loadOBJ("tree");
-        RawModel treeRaw = loader.loadToVAO(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
-        Material treeMaterial = new Material(colors);
-        treeMaterial.setShineDamper(5);
-        treeMaterial.setReflectivity(0.1f);
-        TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
-        List<ModelTransform> trees = new ArrayList<>();
-        for (int i = 0; i < 500; i++)
-        {
-        	Vector3f treePos = new Vector3f(-rand.nextInt(800), -1f, -rand.nextInt(800));
-        	treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
-            Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
-            trees.add(new ModelTransform(treeTransform, treeModel));
-        }
+		ModelData treeData = OBJLoader.loadOBJ("tree");
+		RawModel treeRaw = loader.loadToModel(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
+		Material treeMaterial = new Material(colors);
+		treeMaterial.setShineDamper(5);
+		treeMaterial.setReflectivity(0.1f);
+		TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
+		List<ModelTransform> trees = new ArrayList<>();
+		for (int i = 0; i < 500; i++)
+		{
+			Vector3f treePos = new Vector3f(-rand.nextInt(800), -1f, -rand.nextInt(800));
+			treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
+			Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
+			trees.add(new ModelTransform(treeTransform, treeModel));
+		}
 
-        ModelData playerData = OBJLoader.loadOBJ("person");
-        RawModel playerRaw = loader.loadToVAO(playerData.getVertices(), playerData.getUVS(), playerData.getNormals(), playerData.getIndices());
-        TexturedModel playerModel = new TexturedModel(playerRaw, new Material(colors));
-        Player player = new Player(playerModel, new Vector3f(-400, 0, -400), 0, 180, 0, 0.75f);
+		ModelData playerData = OBJLoader.loadOBJ("person");
+		RawModel playerRaw = loader.loadToModel(playerData.getVertices(), playerData.getUVS(), playerData.getNormals(), playerData.getIndices());
+		TexturedModel playerModel = new TexturedModel(playerRaw, new Material(colors));
+		Player player = new Player(playerModel, new Vector3f(-400, 0, -400), 0, 180, 0, 0.75f);
 
-        List<Light> lights = new ArrayList<>();
+		List<Light> lights = new ArrayList<>();
 
-        lights.add(new Light(new Vector3f(-400, 35, -400), new Vector3f(0.4f, 0.4f, 0.4f)));
-        lights.add(new Light(new Vector3f(-550, 35, -450), new Vector3f(2, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
-	    lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(2, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
-	    lights.add(new Light(new Vector3f(-300, 35, -450), new Vector3f(0, 0, 2), new Vector3f(1f, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(-400, 35, -400), new Vector3f(0.4f, 0.4f, 0.4f)));
+		lights.add(new Light(new Vector3f(-550, 35, -450), new Vector3f(20, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(20, 0, 0), new Vector3f(1f, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(-300, 35, -450), new Vector3f(0, 0, 20), new Vector3f(1f, 0.01f, 0.002f)));
 
-        Camera camera = new Camera(player);
-        RenderManager renderer = new RenderManager();
+		Camera camera = new Camera(player);
+		RenderManager renderer = new RenderManager();
 
-        while (!Display.isCloseRequested())
-        {
-            camera.move();
-            player.move(terrain);
+		while (!Display.isCloseRequested())
+		{
+			camera.move();
+			player.move(terrain);
 
-            renderer.processTerrain(terrain);
+			renderer.processTerrain(terrain);
 
-            renderer.processSimilarObjects(trees);
+			renderer.processSimilarObjects(trees);
 
-            renderer.processObject(player.data);
-            renderer.render(lights, camera);
-            DisplayManager.updateDisplay();
-        }
+			renderer.processObject(player.data);
+			renderer.render(lights, camera);
 
-        renderer.cleanup();
-        loader.cleanup();
-        DisplayManager.closeDisplay();
-    }
+			FontRenderManager.render();
+
+			DisplayManager.updateDisplay();
+		}
+
+		renderer.cleanup();
+		FontRenderManager.cleanup();
+		loader.cleanup();
+		DisplayManager.closeDisplay();
+	}
 }

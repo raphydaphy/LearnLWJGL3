@@ -1,12 +1,11 @@
 #version 400 core
 
-in vec2 frag_tex_coords;
-flat in vec3 frag_surface_normal;
+in vec3 frag_surface_normal;
 in vec3 frag_light_vector[4];
 in vec3 frag_camera_vector;
 in float visibility;
 
-flat in vec4 frag_color;
+in vec4 frag_color;
 
 out vec4 out_color;
 

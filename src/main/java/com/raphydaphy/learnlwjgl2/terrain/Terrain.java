@@ -104,7 +104,7 @@ public class Terrain
 				indices[indexPointer++] = bottomRight;
 			}
 		}
-		return loader.loadToVAO(vertices, uvs, normals, indices);
+		return loader.loadToModel(vertices, uvs, normals, indices);
 	}
 
 	private Vector3f calculateNormal(int x, int z, float[][] noiseMap)

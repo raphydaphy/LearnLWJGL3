@@ -1,16 +1,14 @@
 #version 400 core
 
 in vec3 position;
-in vec2 tex_coords;
 in vec3 normal;
 
-out vec2 frag_tex_coords;
-flat out vec3 frag_surface_normal;
+out vec3 frag_surface_normal;
 out vec3 frag_light_vector[4];
 out vec3 frag_camera_vector;
 out float visibility;
 
-flat out vec4 frag_color;
+out vec4 frag_color;
 
 uniform mat4 transform;
 uniform mat4 projection;
@@ -27,7 +25,6 @@ void main()
 
     vec4 relative_position = view * world_position;
 	gl_Position = projection * relative_position;
-	frag_tex_coords = tex_coords;
 
 	frag_surface_normal = (transform * vec4(normal, 0)).xyz;
 

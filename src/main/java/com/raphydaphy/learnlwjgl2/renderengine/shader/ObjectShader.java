@@ -34,8 +34,8 @@ public class ObjectShader extends ShaderProgram
 		// The ID's here are the ID's of the vertex buffers within the vertex array
 		// The number is whatever we tell it to be in Loader#loadToVAO
 		super.bindAttribute(0, "position");
-		super.bindAttribute(1, "tex_coords");
-		super.bindAttribute(2, "normal");
+		super.bindAttribute(1, "normal");
+		super.bindAttribute(2, "tex_coords");
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.io.BufferedReader;
@@ -64,6 +65,11 @@ public abstract class ShaderProgram
     protected void uniformFloat(int location, float value)
     {
         GL20.glUniform1f(location, value);
+    }
+
+    protected void uniformVector2(int location, Vector2f value)
+    {
+        GL20.glUniform2f(location, value.x, value.y);
     }
 
     protected void uniformVector3(int location, Vector3f value)
