@@ -3,10 +3,6 @@
 in vec3 position;
 in vec3 normal;
 
-out vec3 frag_surface_normal;
-out vec3 frag_light_vector[4];
-out vec3 frag_camera_vector;
-
 out vec4 shadow_coords;
 
 flat out vec4 frag_color;
@@ -14,18 +10,16 @@ flat out vec3 total_diffuse;
 flat out vec3 total_specular;
 flat out float visibility;
 
-uniform mat4 transform;
-uniform mat4 projection;
-uniform mat4 view;
-
-uniform vec3 light_position[4];
-
 const float fog_density = 0.005;
 const float fog_gradient = 4;
 const float shadow_distance = 100;
 const float transition_distance = 10;
 
-uniform sampler2D sampler;
+uniform mat4 transform;
+uniform mat4 projection;
+uniform mat4 view;
+
+uniform vec3 light_position[4];
 uniform vec3 light_color[4];
 uniform vec3 light_attenuation[4];
 uniform float shine_damper;
@@ -42,13 +36,14 @@ void main()
     vec4 relative_position = view * world_position;
 	gl_Position = projection * relative_position;
 
-	frag_surface_normal = (transform * vec4(normal, 0)).xyz;
+	vec3 frag_surface_normal = (transform * vec4(normal, 0)).xyz;
 
+    vec3 frag_light_vector[4];
 	for (int i = 0; i < 4; i++)
 	{
 	    frag_light_vector[i] = light_position[i] - world_position.xyz;
 	}
-	frag_camera_vector = (inverse(view) * vec4(0, 0, 0, 1)).xyz - world_position.xyz;
+	vec3 frag_camera_vector = (inverse(view) * vec4(0, 0, 0, 1)).xyz - world_position.xyz;
 
 	float camera_distance = length(relative_position.xyz);
     visibility = exp(-pow((camera_distance*fog_density), fog_gradient));

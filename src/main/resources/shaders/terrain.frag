@@ -1,9 +1,5 @@
 #version 400 core
 
-in vec3 frag_surface_normal;
-in vec3 frag_light_vector[4];
-in vec3 frag_camera_vector;
-
 in vec4 shadow_coords;
 
 flat in vec4 frag_color;
