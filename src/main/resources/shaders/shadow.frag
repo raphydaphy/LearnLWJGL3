@@ -1,11 +1,17 @@
 #version 330
 
+in vec2 frag_textures;
+
 out vec4 out_colour;
 
-uniform sampler2D modelTexture;//will use this next week
+uniform sampler2D modelTexture;
 
-void main(void){
-
+void main(void)
+{
+    float alpha = texture(modelTexture, frag_textures).a;
+    if (alpha < 0.5)
+    {
+        discard;
+    }
 	out_colour = vec4(1.0);
-	
 }

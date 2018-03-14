@@ -22,6 +22,8 @@ uniform vec3 light_position[4];
 
 const float fog_density = 0.005;
 const float fog_gradient = 4;
+const float shadow_distance = 100;
+const float transition_distance = 10;
 
 uniform sampler2D sampler;
 uniform vec3 light_color[4];
@@ -51,6 +53,11 @@ void main()
 	float camera_distance = length(relative_position.xyz);
     visibility = exp(-pow((camera_distance*fog_density), fog_gradient));
     visibility = clamp(visibility, 0, 1);
+
+    camera_distance = camera_distance - (shadow_distance - transition_distance);
+    camera_distance = camera_distance / transition_distance;
+
+    shadow_coords.w = clamp(1 - camera_distance, 0, 1);
 
     if (world_position.y < 5)
     {

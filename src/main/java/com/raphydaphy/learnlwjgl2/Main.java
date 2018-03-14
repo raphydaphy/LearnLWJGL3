@@ -18,7 +18,6 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
-import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
@@ -82,13 +81,13 @@ public class Main
 			camera.move();
 			player.move(terrain);
 
-			renderer.renderShadowMap(trees, sun);
-
 			renderer.processTerrain(terrain);
 
 			renderer.processSimilarObjects(trees);
 
 			renderer.processObject(player.data);
+
+			renderer.renderShadowMap(sun);
 			renderer.render(lights, camera);
 
 			FontRenderManager.render();

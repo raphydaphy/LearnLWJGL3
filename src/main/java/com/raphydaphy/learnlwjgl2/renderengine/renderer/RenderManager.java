@@ -147,14 +147,9 @@ public class RenderManager
         terrains.add(terrain);
     }
 
-    public void renderShadowMap(List<ModelTransform> objectList, Light sun)
+    public void renderShadowMap(Light sun)
     {
-    	for (ModelTransform transform : objectList)
-	    {
-	    	processObject(transform);
-	    }
 	    shadowMapRenderer.render(objects, sun);
-    	objects.clear();
     }
 
     public void cleanup()

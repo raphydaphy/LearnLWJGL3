@@ -30,6 +30,7 @@ public class ShadowShader extends ShaderProgram
 	protected void bindAttributes()
 	{
 		super.bindAttribute(0, "in_position");
+		super.bindAttribute(1, "in_textures");
 	}
 
 }

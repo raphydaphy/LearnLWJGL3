@@ -13,20 +13,37 @@ flat in float visibility;
 
 out vec4 out_color;
 
+const int sample_radius = 2;
+const float total_pixels = (sample_radius * 2 + 1) * (sample_radius * 2 + 1);
+
 uniform vec3 sky_color;
 uniform sampler2D shadow_map;
 
 void main()
 {
-    float object_nearest_light = texture(shadow_map, shadow_coords.xy).r;
-    float light_factor = 1;
-    if (shadow_coords.z > object_nearest_light)
+    float map_size = 4096; // whatever value we use in shadowmapmasterrenderer
+    float pixel_size = 1 / map_size;
+    float total = 0;
+
+    for (int x = -sample_radius; x < sample_radius; x++)
     {
-        light_factor = 1 - 0.4;
+        for (int y = -sample_radius; y < sample_radius; y++)
+        {
+            float object_nearest_light = texture(shadow_map, shadow_coords.xy + vec2(x, y) * pixel_size).r;
+
+             if (shadow_coords.z > object_nearest_light)
+            {
+                total += 1;
+            }
+        }
     }
 
-    vec3 shadow_diffuse = max(total_diffuse, 0.4) * light_factor;
+    total /= total_pixels;
 
-    out_color = vec4(total_diffuse, 1) * frag_color + vec4(total_specular, 1);
-    out_color = mix(vec4(sky_color, 1), frag_color, visibility);
+    float light_factor = 1 - (total * shadow_coords.w);
+
+    vec3 shadow_diffuse = max(total_diffuse * light_factor, 0.4);
+
+    out_color = vec4(shadow_diffuse, 1) * frag_color + vec4(total_specular, 1);
+    out_color = mix(vec4(sky_color, 1), out_color, visibility);
 }
