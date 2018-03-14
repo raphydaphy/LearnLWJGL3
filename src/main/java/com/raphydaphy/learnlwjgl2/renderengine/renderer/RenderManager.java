@@ -6,9 +6,11 @@ import main.java.com.raphydaphy.learnlwjgl2.render.Light;
 import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.ObjectShader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.TerrainShader;
+import main.java.com.raphydaphy.learnlwjgl2.renderengine.shadow.ShadowMapMasterRenderer;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -16,9 +18,9 @@ import java.util.*;
 
 public class RenderManager
 {
-    private static final float FOV = 70f;
-    private static final float NEAR_PLANE = 0.1f;
-    private static final float FAR_PLANE = 1000f;
+    public static final float FOV = 70f;
+	public static final float NEAR_PLANE = 0.1f;
+	public static final float FAR_PLANE = 1000f;
 
     private static final Vector3f SKY = new Vector3f(0.5f, 0.5f, 0.5f);
 
@@ -28,11 +30,13 @@ public class RenderManager
     private TerrainShader terrainShader;
     private TerrainRenderer terrainRenderer;
 
+    private ShadowMapMasterRenderer shadowMapRenderer;
+
     private Matrix4f projection;
     private Map<TexturedModel, List<ModelTransform>> objects = new HashMap<>();
     private List<Terrain> terrains = new ArrayList<>();
 
-    public RenderManager()
+    public RenderManager(Camera camera)
     {
         enableCulling();
         initProjection();
@@ -42,26 +46,28 @@ public class RenderManager
 
         terrainShader = new TerrainShader();
         terrainRenderer = new TerrainRenderer(terrainShader, projection);
+
+        shadowMapRenderer = new ShadowMapMasterRenderer(camera);
     }
 
     public void initProjection()
     {
-        // The aspect ratio of the camera, based on width and height so that it can scale depending on screen res
+        // Aspect ratio of the camera, based on the width and height so that it can scale with screen resolution
         float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
 
-        float yScale = (float) (1f / Math.tan(Math.toRadians(FOV / 2f)) * aspectRatio);
-        float xScale = yScale / aspectRatio;
+        float y_scale = (float) ((1f / Math.tan(Math.toRadians(FOV / 2f))));
+        float x_scale = y_scale / aspectRatio;
 
-        // The total z length which the camera can see objects within
-        float frustumLength = FAR_PLANE - NEAR_PLANE;
+        // The total z length which this camera can see objects within
+        float frustum_length = FAR_PLANE - NEAR_PLANE;
 
-        // Setup the matrix and use a formula to calculate a simple view frustum
+        // Setup the projection with a simple view frustum based on the near plane and far plane distances.
         projection = new Matrix4f();
-        projection.m00 = xScale;
-        projection.m11 = yScale;
-        projection.m22 = -((FAR_PLANE + NEAR_PLANE) / frustumLength);
+        projection.m00 = x_scale;
+        projection.m11 = y_scale;
+        projection.m22 = -((FAR_PLANE + NEAR_PLANE) / frustum_length);
         projection.m23 = -1;
-        projection.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustumLength);
+        projection.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustum_length);
         projection.m33 = 0;
     }
 
@@ -70,6 +76,8 @@ public class RenderManager
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glClearColor(SKY.x, SKY.y, SKY.z, 1);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+	    GL13.glActiveTexture(GL13.GL_TEXTURE5);
+	    GL11.glBindTexture(GL11.GL_TEXTURE_2D, getShadowMapTexture());
     }
 
     public void render(List<Light> lights, Camera camera)
@@ -88,11 +96,12 @@ public class RenderManager
 
         terrainShader.bind();
 
+        terrainShader.bindShadowMapSampler();
         terrainShader.loadSkyColor(SKY);
         terrainShader.loadLights(lights);
         terrainShader.loadViewMatrix(camera);
 
-        terrainRenderer.render(terrains);
+        terrainRenderer.render(terrains, shadowMapRenderer.getToShadowMapSpaceMatrix());
 
         terrainShader.unbind();
 
@@ -138,10 +147,26 @@ public class RenderManager
         terrains.add(terrain);
     }
 
+    public void renderShadowMap(List<ModelTransform> objectList, Light sun)
+    {
+    	for (ModelTransform transform : objectList)
+	    {
+	    	processObject(transform);
+	    }
+	    shadowMapRenderer.render(objects, sun);
+    	objects.clear();
+    }
+
     public void cleanup()
     {
         objectShader.cleanup();
         terrainShader.cleanup();
+	    shadowMapRenderer.cleanUp();
+    }
+
+    public int getShadowMapTexture()
+    {
+    	return shadowMapRenderer.getShadowMap();
     }
 
     public static void enableCulling()

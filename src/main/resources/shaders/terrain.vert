@@ -6,9 +6,13 @@ in vec3 normal;
 out vec3 frag_surface_normal;
 out vec3 frag_light_vector[4];
 out vec3 frag_camera_vector;
-out float visibility;
+
+out vec4 shadow_coords;
 
 flat out vec4 frag_color;
+flat out vec3 total_diffuse;
+flat out vec3 total_specular;
+flat out float visibility;
 
 uniform mat4 transform;
 uniform mat4 projection;
@@ -26,9 +30,12 @@ uniform float shine_damper;
 uniform float reflectivity;
 uniform vec3 sky_color;
 
+uniform mat4 to_shadow_map_space;
+
 void main()
 {
     vec4 world_position = transform * vec4(position, 1);
+    shadow_coords = to_shadow_map_space * world_position;
 
     vec4 relative_position = view * world_position;
 	gl_Position = projection * relative_position;
@@ -69,9 +76,6 @@ void main()
      vec3 unit_normal = normalize(frag_surface_normal);
     vec3 unit_camera_vector = normalize(frag_camera_vector);
 
-    vec3 total_diffuse = vec3(0);
-    vec3 total_specular = vec3(0);
-
     for (int i = 0; i < 4; i++)
     {
         float distance = length(frag_light_vector[i]);
@@ -92,7 +96,4 @@ void main()
         total_diffuse = total_diffuse + (brightness * light_color[i]) / attFactor;
         total_specular = total_specular + (dampening_factor * reflectivity * light_color[i]) / attFactor;
     }
-
-    frag_color = vec4(total_diffuse, 1) * frag_color + vec4(total_specular, 1);
-    frag_color = mix(vec4(sky_color, 1), frag_color, visibility);
 }

@@ -21,6 +21,8 @@ public class TerrainShader extends ShaderProgram
 	private int shineDamperLocation;
 	private int reflectivityLocation;
 	private int skyColorLocation;
+	private int toShadowMapSpaceLocation;
+	private int shadowMapLocation;
 
 	public TerrainShader()
 	{
@@ -57,6 +59,14 @@ public class TerrainShader extends ShaderProgram
 			lightColorLocation[light] = super.getUniformLocation("light_color[" + light + "]");
 			lightAttenuationLocation[light] = super.getUniformLocation("light_attenuation[" + light + "]");
 		}
+
+		toShadowMapSpaceLocation = super.getUniformLocation("to_shadow_map_space");
+		shadowMapLocation = super.getUniformLocation("shadow_map");
+	}
+
+	public void bindShadowMapSampler()
+	{
+		super.uniformInt(shadowMapLocation, 5);
 	}
 
 	public void loadSkyColor(Vector3f skyColor)
@@ -99,5 +109,10 @@ public class TerrainShader extends ShaderProgram
 				super.uniformVector3(lightAttenuationLocation[light], new Vector3f(1, 0, 0));
 			}
 		}
+	}
+
+	public void loadShadowMapSpaceMatrix(Matrix4f toShadowMapSpace)
+	{
+		super.uniformMatrix4(toShadowMapSpaceLocation, toShadowMapSpace);
 	}
 }

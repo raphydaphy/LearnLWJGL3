@@ -68,18 +68,21 @@ public class Main
 
 		List<Light> lights = new ArrayList<>();
 
-		lights.add(new Light(new Vector3f(-400, 35, -400), new Vector3f(0.4f, 0.4f, 0.4f)));
+		Light sun = new Light(new Vector3f(100000, 200000, 100000), new Vector3f(0.4f, 0.4f, 0.4f));
+		lights.add(sun);
 		lights.add(new Light(new Vector3f(-550, 35, -450), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 		lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 		lights.add(new Light(new Vector3f(-300, 35, -450), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 
 		Camera camera = new Camera(player);
-		RenderManager renderer = new RenderManager();
+		RenderManager renderer = new RenderManager(camera);
 
 		while (!Display.isCloseRequested())
 		{
 			camera.move();
 			player.move(terrain);
+
+			renderer.renderShadowMap(trees, sun);
 
 			renderer.processTerrain(terrain);
 
