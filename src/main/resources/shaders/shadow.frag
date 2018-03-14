@@ -11,6 +11,7 @@ void main(void)
     float alpha = texture(modelTexture, frag_textures).a;
     if (alpha < 0.5)
     {
+        discard;
     }
 	out_colour = vec4(1.0);
 }

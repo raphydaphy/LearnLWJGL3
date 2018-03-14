@@ -62,7 +62,7 @@ public class ShadowMapEntityRenderer
 			}
 		}
 		GL20.glDisableVertexAttribArray(0);
-		GL20.glDisableVertexAttribArray(1);
+		GL20.glDisableVertexAttribArray(2);
 		GL30.glBindVertexArray(0);
 	}
 
@@ -77,7 +77,7 @@ public class ShadowMapEntityRenderer
 	{
 		GL30.glBindVertexArray(rawModel.getVAOID());
 		GL20.glEnableVertexAttribArray(0);
-		GL20.glEnableVertexAttribArray(1);
+		GL20.glEnableVertexAttribArray(2);
 	}
 
 	/**
