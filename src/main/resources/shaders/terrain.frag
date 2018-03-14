@@ -13,7 +13,7 @@ flat in float visibility;
 
 out vec4 out_color;
 
-const int sample_radius = 2;
+const int sample_radius = 3;
 const float total_pixels = (sample_radius * 2 + 1) * (sample_radius * 2 + 1);
 
 uniform vec3 sky_color;
@@ -21,7 +21,7 @@ uniform sampler2D shadow_map;
 
 void main()
 {
-    float map_size = 4096; // whatever value we use in shadowmapmasterrenderer
+    float map_size = 2048 * 4; // whatever value we use in shadowmapmasterrenderer
     float pixel_size = 1 / map_size;
     float total = 0;
 
@@ -42,7 +42,7 @@ void main()
 
     float light_factor = 1 - (total * shadow_coords.w);
 
-    vec3 shadow_diffuse = max(total_diffuse * light_factor, 0.4);
+    vec3 shadow_diffuse = max(total_diffuse, 0.4) * light_factor;
 
     out_color = vec4(shadow_diffuse, 1) * frag_color + vec4(total_specular, 1);
     out_color = mix(vec4(sky_color, 1), out_color, visibility);
