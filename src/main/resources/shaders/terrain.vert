@@ -75,6 +75,8 @@ void main()
         frag_color = vec4(1,1,1,1);
     }
 
+    frag_color = vec4(1,1,1,1);
+
      vec3 unit_normal = normalize(frag_surface_normal);
     vec3 unit_camera_vector = normalize(frag_camera_vector);
 

@@ -42,8 +42,7 @@ public class Main
 		text.setColour(1, 0, 1);
 		int colors = loader.loadTexture("colors");
 
-		Material grassMaterial = new Material(colors);
-		Terrain terrain = new Terrain(-1, -1, loader, grassMaterial);
+		Terrain terrain = new Terrain(0, 0,0, loader);
 
 		ModelData treeData = OBJLoader.loadOBJ("tree");
 		RawModel treeRaw = loader.loadToModel(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
@@ -63,13 +62,13 @@ public class Main
 		ModelData playerData = OBJLoader.loadOBJ("person");
 		RawModel playerRaw = loader.loadToModel(playerData.getVertices(), playerData.getUVS(), playerData.getNormals(), playerData.getIndices());
 		TexturedModel playerModel = new TexturedModel(playerRaw, new Material(colors));
-		Player player = new Player(playerModel, new Vector3f(-400, 0, -400), 0, 180, 0, 0.75f);
+		Player player = new Player(playerModel, new Vector3f(0, 0, 0), 0, 180, 0, 0.75f);
 
 		List<Light> lights = new ArrayList<>();
 
 		Light sun = new Light(new Vector3f(100000, 200000, 100000), new Vector3f(0.4f, 0.4f, 0.4f));
 		lights.add(sun);
-		lights.add(new Light(new Vector3f(-550, 35, -450), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
+		lights.add(new Light(new Vector3f(0, 35, 0), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 		lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 		lights.add(new Light(new Vector3f(-300, 35, -450), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 

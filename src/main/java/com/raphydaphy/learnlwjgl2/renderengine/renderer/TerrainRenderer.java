@@ -32,35 +32,26 @@ public class TerrainRenderer
         shader.loadShadowMapSpaceMatrix(toShadowSpace);
         for (Terrain terrain : terrains)
         {
-            prepareTerrain(terrain);
             loadModelMatrix(terrain);
 
             // Draw the vertices bound in GL_ARRAY_BUFFER using indices from GL_ELEMENT_BUFFER
-            GL11.glDrawElements(GL11.GL_TRIANGLES, terrain.getMesh().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-
+            for (RawModel mesh : terrain.getMeshes())
+            {
+                prepareTerrainMesh(mesh);
+                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+            }
             unbindModel();
         }
     }
 
-    private void prepareTerrain(Terrain terrain)
+    private void prepareTerrainMesh(RawModel terrainMesh)
     {
-        // Get the raw model in order to get the vertex array ID and vertex count
-        RawModel rawModel = terrain.getMesh();
-
         // Bind the model's vertex array, along with all the pointer data stored in it
-        GL30.glBindVertexArray(rawModel.getVAOID());
+        GL30.glBindVertexArray(terrainMesh.getVAOID());
 
         // Enable the various vertex buffer arrays which we bound in Loader#storeDataInAttributeList
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
-
-        // Load the reflection information from the material to the shader
-        Material texture = terrain.getTexture();
-        shader.loadReflectionInfo(texture.getShineDamper(), texture.getReflectivity());
-
-        // Bind the texture to the sampler with id #0
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getID());
     }
 
     private void unbindModel()
