@@ -32,7 +32,7 @@ public class FontRenderManager
 	{
 		FontType font = text.getFont();
 		TextMeshData data = font.loadText(text);
-		int vao = loader.loadToVAO(data.getVertexPositions(), 2, data.getTextureCoords(), null, null);
+		int vao = loader.loadToVAO(data.getVertexPositions(), 2, data.getTextureCoords(), 2,null, null);
 		text.setMeshInfo(vao, data.getVertexCount());
 		List<GUIText> batch = texts.get(font);
 		if (batch == null)

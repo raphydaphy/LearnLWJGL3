@@ -2,6 +2,7 @@
 
 in vec3 position;
 in vec3 normal;
+in vec3 color;
 
 out vec4 shadow_coords;
 
@@ -54,28 +55,7 @@ void main()
 
     shadow_coords.w = clamp(1 - camera_distance, 0, 1);
 
-    if (world_position.y < 5)
-    {
-        frag_color = vec4(0,0,1,1);
-    }
-    else if (world_position.y < 10)
-    {
-        frag_color = vec4(1,1,0,1);
-    }
-    else if (world_position.y < 15)
-    {
-        frag_color = vec4(0,1,0,1);
-    }
-    else if (world_position.y < 25)
-    {
-        frag_color = vec4(0,1,1,1);
-    }
-    else
-    {
-        frag_color = vec4(1,1,1,1);
-    }
-
-    frag_color = vec4(0.0431372549,0.91764705882,0.23921568627,1);
+    frag_color = vec4(color, 1);
 
      vec3 unit_normal = normalize(frag_surface_normal);
     vec3 unit_camera_vector = normalize(frag_camera_vector);

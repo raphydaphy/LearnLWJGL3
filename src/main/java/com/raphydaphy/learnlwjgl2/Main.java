@@ -19,6 +19,7 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.MousePicker;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
@@ -85,6 +86,49 @@ public class Main
 			camera.move();
 
 			picker.update();
+
+			if (Mouse.isButtonDown(0))
+			{
+				int modifyX = (int)player.data.getTransform().getPosition().x;
+				int modifyY = Integer.MAX_VALUE;
+				int modifyZ = (int)player.data.getTransform().getPosition().z;
+
+				for (int y = Terrain.SIZE - 2; y > 0; y--)
+				{
+					float density = terrain.getDensity(modifyX, y, modifyZ);
+					if (density > 0.5f)
+					{
+						modifyY = y;
+						break;
+					}
+				}
+
+				if (modifyY < Float.MAX_VALUE)
+				{
+					System.out.println("dig at " + modifyY);
+
+					int range = 5;
+
+					for (int mx = - range; mx < + range; mx++)
+					{
+						for (int mz = - range; mz < + range; mz++)
+						{
+							float density = terrain.getDensity(modifyX + mx, modifyY, modifyZ + mz);
+
+							float factor = Math.abs(mx) + Math.abs(mz);
+
+							float remove = Math.max(0, 0.3f - (0.03f * factor));
+
+							if (!terrain.setDensity(modifyX + mx, modifyY, modifyZ + mz, density - remove))
+							{
+								System.out.println("sadness");
+							}
+						}
+					}
+
+					terrain.regenerateTerrain(loader);
+				}
+			}
 
 			renderer.processTerrain(terrain);
 

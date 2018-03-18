@@ -21,10 +21,10 @@ public class Loader
 
 	public RawModel loadToModel(float[] positions, float[] uvs, float[] normals, int[] indices)
 	{
-		return new RawModel(loadToVAO(positions, 3, uvs, normals, indices), indices.length);
+		return new RawModel(loadToVAO(positions, 3, uvs,2, normals, indices), indices.length);
 	}
 
-	public int loadToVAO(float[] positions, int positionDimensions, float[] uvs, float[] normals, int[] indices)
+	public int loadToVAO(float[] positions, int positionDimensions, float[] uvs, int uvDimensions, float[] normals, int[] indices)
 	{
 		// Vertex array used to store the buffers
 		int vaoID = createVAO();
@@ -47,7 +47,7 @@ public class Loader
 		if (uvs != null)
 		{
 			// Store texture coordinates in another vertex buffer
-			storeDataInAttributeList(2, 2, uvs);
+			storeDataInAttributeList(2, uvDimensions, uvs);
 		}
 
 		// Unbind the VAO to prevent accidental modification
@@ -55,7 +55,7 @@ public class Loader
 		return vaoID;
 	}
 
-	private int createVAO()
+	public int createVAO()
 	{
 		// Generate a new vertex array and save it to the array so that it can be deleted on game close
 		int vaoID = GL30.glGenVertexArrays();
@@ -94,11 +94,17 @@ public class Loader
 		return textureID;
 	}
 
-	private void storeDataInAttributeList(int attributeNumber, int dimensions, float[] data)
+	public int storeDataInAttributeList(int attributeNumber, int dimensions, float[] data)
 	{
-		// create a vertex buffer in which to store data
-		int vboID = GL15.glGenBuffers();
-		vbos.add(vboID);
+		return storeDataInAttributeList(GL15.glGenBuffers(), attributeNumber, dimensions, data);
+	}
+
+	public int storeDataInAttributeList(int vboID, int attributeNumber, int dimensions, float[] data)
+	{
+		if (!vbos.contains(vboID))
+		{
+			vbos.add(vboID);
+		}
 
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
 
@@ -110,18 +116,26 @@ public class Loader
 
 		// Unbind the buffer since we don't need it now that we have saved the data to the vertex array (gl uses whatever vertex array that was already bound)
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+		return vboID;
 	}
 
-	private void unbindVAO()
+	public void unbindVAO()
 	{
 		GL30.glBindVertexArray(0);
 	}
 
-	private void bindIndexBuffer(int[] indices)
+	public int bindIndexBuffer(int[] indices)
 	{
-		// We need a vertex buffer to store the indices
-		int vboID = GL15.glGenBuffers();
-		vbos.add(vboID);
+		return bindIndexBuffer(GL15.glGenBuffers(), indices);
+	}
+
+	public int bindIndexBuffer(int vboID, int[] indices)
+	{
+		if (!vbos.contains(vboID))
+		{
+			vbos.add(vboID);
+		}
 
 		// We will be using the element array buffer as it is used to store indices that are mapped based on the array buffer
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboID);
@@ -129,6 +143,7 @@ public class Loader
 		// Put the indices into the element array buffer, in the form of a newly generated IntBuffer
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, genBuffer(indices), GL15.GL_STATIC_DRAW);
 
+		return vboID;
 	}
 
 	private FloatBuffer genBuffer(float[] data)

@@ -1,12 +1,11 @@
 package main.java.com.raphydaphy.learnlwjgl2.terrain;
 
+import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MarchingCubesGenerator
 {
@@ -29,7 +28,7 @@ public class MarchingCubesGenerator
 		this.edgeVertex = new Vector3f[12];
 	}
 
-	public void generateMesh(float[] voxels, int width, int height, int depth, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices, Map<Pos3, List<Vector3f[]>> triangles)
+	public void generateMesh(float[] voxels, int width, int height, int depth, List<Vector3f> vertices, List<Vector3f> normals, List<Vector3f> colors, List<Integer> indices, Map<Pos3, List<Vector3f[]>> triangles)
 	{
 		if (surface > 0)
 		{
@@ -59,13 +58,13 @@ public class MarchingCubesGenerator
 						cube[adj] = voxels[adjX + adjY * width + adjZ * height * depth];
 					}
 
-					triangles.put(new Pos3(x,y,z),marchCube(x,y,z, cube, vertices, normals, indices));
+					triangles.put(new Pos3(x,y,z),marchCube(x,y,z, cube, vertices, normals, colors, indices));
 				}
 			}
 		}
 	}
 
-	private List<Vector3f[]> marchCube(int x, int y, int z, float[] cubeIn, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices)
+	private List<Vector3f[]> marchCube(int x, int y, int z, float[] cubeIn, List<Vector3f> vertices, List<Vector3f> normals, List<Vector3f> colors, List<Integer> indices)
 	{
 		int flagIndex = 0;
 
@@ -129,9 +128,92 @@ public class MarchingCubesGenerator
 			Vector3f normal = Vector3f.cross(a, b, null).normalise(null);
 
 			normals.addAll(Arrays.asList(normal, normal, normal));
+
+			float height = (triangleVerts[0].y + triangleVerts[1].y + triangleVerts[2].y) / 3f;
+			Vector3f color = getBlendColor(height);
+
+
+
+			colors.addAll(Arrays.asList(color, color, color));
 		}
 
 		return triangles;
+	}
+
+	private Vector3f lerp(Vector3f a, Vector3f b, float alpha)
+	{
+		return new Vector3f(a.x + alpha * (b.x - a.x), a.y + alpha * (b.y - a.y), a.z + alpha * (b.z - a.z));
+	}
+
+	private Vector3f getBlendColor(float height)
+	{
+		Region region = getRegion(height);
+		Vector3f colorA = getRegionColor(region.getID());
+		Vector3f colorB = getRegionColor(region.getID() + 1);
+		float alpha = Math.abs((float) MathUtils.clamp((region.maxHeight - height), 0f, 1f) - 1);
+		Vector3f interpolated = lerp(colorA, colorB, alpha);
+		return interpolated;
+	}
+
+	private enum Region
+	{
+		SAND(6), GRASS(10), FOREST(13), STONE(15), CLIFF(18), SNOW(30);
+
+		private int id;
+		public final float maxHeight;
+
+		static
+		{
+			int nextID = 0;
+			for (Region region : Region.values())
+			{
+				region.id = nextID++;
+			}
+		}
+
+		Region(float maxHeight)
+		{
+			this.maxHeight = maxHeight;
+		}
+
+		public int getID()
+		{
+			return id;
+		}
+	}
+
+	private Region getRegion(float height)
+	{
+		for (Region region : Region.values())
+		{
+			if (height < region.maxHeight)
+			{
+				return region;
+			}
+		}
+
+		return Region.SNOW;
+	}
+
+	private Vector3f getRegionColor(int region)
+	{
+		switch(region)
+		{
+			case 0:
+				return new Vector3f(210 / 256f, 219 / 256f, 111 / 256f);
+			case 1:
+				return new Vector3f(0.0431372549f,0.91764705882f,0.23921568627f);
+			case 2:
+				return new Vector3f(13 / 255f, 132 / 255f, 21 / 255f);
+			case 3:
+				return new Vector3f(112 / 255f, 112 / 255f, 112 / 255f);
+			case 4:
+				return new Vector3f(68 / 255f, 68 / 255f, 68 / 255f);
+			default:
+				return new Vector3f(1f, 1f, 1f);
+		}
+
+
 	}
 
 	private float getOffset(float v1, float v2)

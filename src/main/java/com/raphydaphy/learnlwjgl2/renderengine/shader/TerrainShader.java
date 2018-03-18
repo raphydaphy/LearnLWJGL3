@@ -21,6 +21,13 @@ public class TerrainShader extends WorldShader
 	}
 
 	@Override
+	protected void bindAttributes()
+	{
+		super.bindAttributes();
+		super.bindAttribute(2, "color");
+	}
+
+	@Override
 	protected void getAllUniformLocations()
 	{
 		super.getAllUniformLocations();

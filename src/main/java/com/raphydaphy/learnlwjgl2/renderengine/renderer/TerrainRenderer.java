@@ -4,6 +4,7 @@ import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.TerrainShader;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.TerrainMesh;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -35,7 +36,7 @@ public class TerrainRenderer
             loadModelMatrix(terrain);
 
             // Draw the vertices bound in GL_ARRAY_BUFFER using indices from GL_ELEMENT_BUFFER
-            for (RawModel mesh : terrain.getMeshes())
+            for (TerrainMesh mesh : terrain.getMeshes())
             {
                 prepareTerrainMesh(mesh);
                 GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
@@ -44,7 +45,7 @@ public class TerrainRenderer
         }
     }
 
-    private void prepareTerrainMesh(RawModel terrainMesh)
+    private void prepareTerrainMesh(TerrainMesh terrainMesh)
     {
         // Bind the model's vertex array, along with all the pointer data stored in it
         GL30.glBindVertexArray(terrainMesh.getVAOID());
@@ -52,6 +53,7 @@ public class TerrainRenderer
         // Enable the various vertex buffer arrays which we bound in Loader#storeDataInAttributeList
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
+        GL20.glEnableVertexAttribArray(2);
     }
 
     private void unbindModel()
@@ -59,6 +61,7 @@ public class TerrainRenderer
         // Unbind everything to prevent it being accidently modified
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
+        GL20.glDisableVertexAttribArray(2);
         GL30.glBindVertexArray(0);
     }
 

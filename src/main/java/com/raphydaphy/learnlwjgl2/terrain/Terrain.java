@@ -1,30 +1,26 @@
 package main.java.com.raphydaphy.learnlwjgl2.terrain;
 
-import main.java.com.raphydaphy.learnlwjgl2.Main;
-import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.Loader;
-import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
-import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
 import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
 import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
-import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.util.*;
 
 public class Terrain
 {
-	public static final int SIZE = 128;
+	public static final int SIZE = 32;
 	private static final long SEED = 0;
 	private static final int MAX_VERTS_PER_MESH = 30000;
-	private static final int VERTEX_COUNT = 128;
 
 	private final float x;
 	private final float y;
 	private final float z;
 
-	private List<RawModel> meshes;
+	private float[] voxels;
+
+	private List<TerrainMesh> meshes;
 
 	private Map<Pos3, List<Vector3f[]>> triangles;
 	private OpenSimplexNoise noise;
@@ -50,17 +46,17 @@ public class Terrain
 		return z;
 	}
 
-	public List<RawModel> getMeshes()
+	public List<TerrainMesh> getMeshes()
 	{
 		return meshes;
 	}
 
 	private float getDensity(int x, int y, int z, int octaves, float scale, float persistance, float lacunarity, Vector3f[] octaveOffsets)
 	{
-		float density = -y / 2f + 6f;
+		float density = -y / 2f + 10f;
 		float halfSize = SIZE / 2f;
-		float amplitude = 1f;
-		float frequency = 1f;
+		float amplitude = 2f; //  Increasing this makes the terrain more hilly
+		float frequency = 1.5f; //  This makes the terrain smoother
 
 		for (int octave = 0; octave < octaves; octave++)
 		{
@@ -77,6 +73,31 @@ public class Terrain
 		}
 
 		return density * halfSize;
+	}
+
+	public void regenerateTerrain(Loader loader)
+	{
+		meshes = generateMesh(loader);
+	}
+
+	public float getDensity(int x, int y, int z)
+	{
+		if (x >= 0 && y >= 0 && z >= 0 && x < SIZE - 1 && y < SIZE - 1 && z < SIZE - 1)
+		{
+			return voxels[x + y * SIZE + z * SIZE * SIZE];
+		}
+
+		return 0;
+	}
+
+	public boolean setDensity(int x, int y, int z, float density)
+	{
+		if (x >= 0 && y >= 0 && z >= 0 && x < SIZE - 1 && y < SIZE - 1 && z < SIZE - 1)
+		{
+			voxels[x + y * SIZE + z * SIZE * SIZE] = density;
+			return true;
+		}
+		return false;
 	}
 
 	private Vector3f[] generateOctaveOffsets(int octaves, float persistance, Vector3f offset)
@@ -102,46 +123,51 @@ public class Terrain
 		return octaveOffsets;
 	}
 
-	private List<RawModel> generateMesh(Loader loader)
+
+	private List<TerrainMesh> generateMesh(Loader loader)
 	{
 		Vector3f offset = new Vector3f(x,y,z);
-		float[] voxels = new float[SIZE * SIZE * SIZE];
-		final int octaves = 8;
-		final float persistance = 0.6f;
-
-		Vector3f[] octaveOffsets = generateOctaveOffsets(octaves, persistance, offset);
-
-		for (int x = 0; x < SIZE; x++)
+		if (voxels == null)
 		{
-			for (int y = 0; y < SIZE; y++)
-			{
-				for (int z = 0; z < SIZE; z++)
-				{
-					float density = getDensity(x, y, z, octaves,50, persistance,2.01f, octaveOffsets);
+			voxels = new float[SIZE * SIZE * SIZE];
+			final int octaves = 12;
+			final float persistance = 0.6f;
 
-					voxels[x + y * SIZE + z * SIZE * SIZE] = density;
+			Vector3f[] octaveOffsets = generateOctaveOffsets(octaves, persistance, offset);
+
+			for (int x = 0; x < SIZE; x++)
+			{
+				for (int y = 0; y < SIZE; y++)
+				{
+					for (int z = 0; z < SIZE; z++)
+					{
+						float density = getDensity(x, y, z, octaves, 100, persistance, 2.01f, octaveOffsets);
+
+						voxels[x + y * SIZE + z * SIZE * SIZE] = density;
+					}
 				}
 			}
 		}
-
 		List<Vector3f> vertices = new ArrayList<>();
 		List<Vector3f> normals = new ArrayList<>();
+		List<Vector3f> colors = new ArrayList<>();
 		List<Integer> indices = new ArrayList<>();
 
 		MarchingCubesGenerator generator = new MarchingCubesGenerator();
 
 		// triangles should have SIZE - 1 ^ 3 entries in it, one for every voxel except the last x, y and z rows
 		triangles = new HashMap<>();
-		generator.generateMesh(voxels, SIZE, SIZE, SIZE, vertices, normals, indices, triangles);
+		generator.generateMesh(voxels, SIZE, SIZE, SIZE, vertices, normals, colors, indices, triangles);
 
 		int numMeshes = vertices.size() / MAX_VERTS_PER_MESH + 1;
 
-		List<RawModel> models = new ArrayList<>();
+		List<TerrainMesh> models = new ArrayList<>();
 
 		for (int mesh = 0; mesh < numMeshes; mesh++)
 		{
 			List<Vector3f> splitVertices = new ArrayList<>();
 			List<Vector3f> splitNormals = new ArrayList<>();
+			List<Vector3f> splitColors = new ArrayList<>();
 			List<Integer> splitIndices = new ArrayList<>();
 
 			for (int vertex = 0; vertex < MAX_VERTS_PER_MESH; vertex++)
@@ -152,6 +178,7 @@ public class Terrain
 				{
 					splitVertices.add(vertices.get(index));
 					splitNormals.add(normals.get(index));
+					splitColors.add(colors.get(index));
 					splitIndices.add(indices.get(index));
 				}
 			}
@@ -163,6 +190,7 @@ public class Terrain
 
 			float[] splitVerticesArray = new float[splitVertices.size() * 3];
 			float[] splitNormalsArray = new float[splitNormals.size() * 3];
+			float[] splitColorsArray = new float[splitColors.size() * 3];
 			int[] splitIndicesArray = new int[splitIndices.size()];
 
 			for (int index = 0; index < splitIndices.size(); index++)
@@ -175,10 +203,20 @@ public class Terrain
 				splitNormalsArray[index * 3 + 1] = splitNormals.get(index).y;
 				splitNormalsArray[index * 3 + 2] = splitNormals.get(index).z;
 
+				splitColorsArray[index * 3] = splitColors.get(index).x;
+				splitColorsArray[index * 3 + 1] = splitColors.get(index).y;
+				splitColorsArray[index * 3 + 2] = splitColors.get(index).z;
+
 				splitIndicesArray[index] = indices.get(index);
 			}
-
-			models.add(loader.loadToModel(splitVerticesArray, null, splitNormalsArray, splitIndicesArray));
+			if (models.size() < mesh)
+			{
+				models.get(mesh).updateTerrain(splitVerticesArray, splitNormalsArray, splitColorsArray, splitIndicesArray, loader);
+			}
+			else
+			{
+				models.add(new TerrainMesh(splitVerticesArray,  splitNormalsArray, splitColorsArray,splitIndicesArray, loader));
+			}
 		}
 
 		return models;
@@ -236,11 +274,7 @@ public class Terrain
 
 			if (closestTri2D != null)
 			{
-				//System.out.println("Comparing triangles: {" + closestTri2D[0] + ", " + closestTri2D[1] + ", " + closestTri2D[2]);
-				//return (closestTri2D[0].y + closestTri2D[1].y + closestTri2D[2].y) / 3f;
-
 				return MathUtils.barryCentric(new Vector3f(0, closestTri2D[0].y, 0), new Vector3f(0, closestTri2D[1].y, 1), new Vector3f(1, closestTri2D[2].y, 0), xCoord, zCoord);
-				//return MathUtils.barryCentric(closestTri2D[0], closestTri2D[1], closestTri2D[2], new Vector2f(xCoord, zCoord));
 			}
 		}
 
