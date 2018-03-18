@@ -1,9 +1,12 @@
 package main.java.com.raphydaphy.learnlwjgl2.terrain;
 
+import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
 import org.lwjgl.util.vector.Vector3f;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MarchingCubesGenerator
 {
@@ -26,7 +29,7 @@ public class MarchingCubesGenerator
 		this.edgeVertex = new Vector3f[12];
 	}
 
-	public void generateMesh(float[] voxels, int width, int height, int depth, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices)
+	public void generateMesh(float[] voxels, int width, int height, int depth, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices, Map<Pos3, List<Vector3f[]>> triangles)
 	{
 		if (surface > 0)
 		{
@@ -56,13 +59,13 @@ public class MarchingCubesGenerator
 						cube[adj] = voxels[adjX + adjY * width + adjZ * height * depth];
 					}
 
-					marchCube(x,y,z, cube, vertices, normals, indices);
+					triangles.put(new Pos3(x,y,z),marchCube(x,y,z, cube, vertices, normals, indices));
 				}
 			}
 		}
 	}
 
-	private void marchCube(float x, float y, float z, float[] cubeIn, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices)
+	private List<Vector3f[]> marchCube(int x, int y, int z, float[] cubeIn, List<Vector3f> vertices, List<Vector3f> normals, List<Integer> indices)
 	{
 		int flagIndex = 0;
 
@@ -78,7 +81,7 @@ public class MarchingCubesGenerator
 
 		if (edgeFlags == 0)
 		{
-			return;
+			return new ArrayList<>();
 		}
 
 		float offset;
@@ -90,13 +93,15 @@ public class MarchingCubesGenerator
 				offset = getOffset(cubeIn[edgeConnection[edge][0]], cubeIn[edgeConnection[edge][1]]);
 
 				edgeVertex[edge] = new Vector3f(
-						x + (vertexOffset[edgeConnection[edge][0]][0] + offset * edgeDirection[edge][0]),
-						y + (vertexOffset[edgeConnection[edge][0]][1] + offset * edgeDirection[edge][1]),
-						z + (vertexOffset[edgeConnection[edge][0]][2] + offset * edgeDirection[edge][2]));
+						(float) x + (vertexOffset[edgeConnection[edge][0]][0] + offset * edgeDirection[edge][0]),
+						(float) y + (vertexOffset[edgeConnection[edge][0]][1] + offset * edgeDirection[edge][1]),
+						(float) z + (vertexOffset[edgeConnection[edge][0]][2] + offset * edgeDirection[edge][2]));
 			}
 		}
 
 		int index, vertex;
+
+		List<Vector3f[]> triangles = new ArrayList<>();
 
 		for (int triangle = 0; triangle < 5; triangle++)
 		{
@@ -117,12 +122,16 @@ public class MarchingCubesGenerator
 				triangleVerts[triVertex] = edgeVertex[vertex];
 			}
 
+			triangles.add(triangleVerts);
+
 			Vector3f a = Vector3f.sub(triangleVerts[1],triangleVerts[0], null);
 			Vector3f b = Vector3f.sub(triangleVerts[2], triangleVerts[0], null);
 			Vector3f normal = Vector3f.cross(a, b, null).normalise(null);
 
 			normals.addAll(Arrays.asList(normal, normal, normal));
 		}
+
+		return triangles;
 	}
 
 	private float getOffset(float v1, float v2)

@@ -177,5 +177,10 @@ public class RenderManager
         GL11.glDisable(GL11.GL_CULL_FACE);
     }
 
+    public Matrix4f getProjectionMatrix()
+    {
+        return projection;
+    }
+
 
 }

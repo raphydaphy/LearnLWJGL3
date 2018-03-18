@@ -16,6 +16,7 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.FontRenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.MousePicker;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
 import org.lwjgl.opengl.Display;
@@ -75,10 +76,14 @@ public class Main
 		Camera camera = new Camera(player);
 		RenderManager renderer = new RenderManager(camera);
 
+		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix());
+
 		while (!Display.isCloseRequested())
 		{
-			camera.move();
 			player.move(terrain);
+			camera.move();
+
+			picker.update();
 
 			renderer.processTerrain(terrain);
 

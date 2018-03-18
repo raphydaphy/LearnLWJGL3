@@ -7,19 +7,17 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
 import main.java.com.raphydaphy.learnlwjgl2.util.OpenSimplexNoise;
+import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Terrain
 {
 	private static final int SIZE = 128;
 	private static final long SEED = 0;
 	private static final int MAX_VERTS_PER_MESH = 30000;
-	private static final int MAX_HEIGHT = 30;
 	private static final int VERTEX_COUNT = 128;
 
 	private final float x;
@@ -28,7 +26,7 @@ public class Terrain
 
 	private List<RawModel> meshes;
 
-	private float[][] heights;
+	private Map<Pos3, List<Vector3f[]>> triangles;
 	private OpenSimplexNoise noise;
 
 	public Terrain(int gridX, int gridY, int gridZ, Loader loader)
@@ -132,7 +130,9 @@ public class Terrain
 
 		MarchingCubesGenerator generator = new MarchingCubesGenerator();
 
-		generator.generateMesh(voxels, SIZE, SIZE, SIZE, vertices, normals, indices);
+		// triangles should have SIZE - 1 ^ 3 entries in it, one for every voxel except the last x, y and z rows
+		triangles = new HashMap<>();
+		generator.generateMesh(voxels, SIZE, SIZE, SIZE, vertices, normals, indices, triangles);
 
 		int numMeshes = vertices.size() / MAX_VERTS_PER_MESH + 1;
 
@@ -184,38 +184,16 @@ public class Terrain
 		return models;
 	}
 
-	private Vector3f calculateNormal(int x, int z, float[][] noiseMap)
-	{
-		if (x > 0 && z < 0 && x < VERTEX_COUNT - 1 && z < VERTEX_COUNT - 1)
-		{
-			float heightL = noiseMap[x - 1][z];
-			float heightR = noiseMap[x + 1][z];
-			float heightD = noiseMap[x][z - 1];
-			float heightU = noiseMap[x][z + 1];
-
-			Vector3f normal = new Vector3f(heightL - heightR, 2f, heightD - heightU);
-			normal.normalise();
-
-			return normal;
-		}
-
-		return new Vector3f(0, 1, 0);
-	}
-
 	public float getHeight(float worldX, float worldZ)
 	{
-		if (true)
-		{
-			return 0;
-		}
 		float terrainX = worldX - this.x;
 		float terrainZ = worldZ - this.z;
-		float gridSquareSize = SIZE / ((float) heights.length - 1);
+		float gridSquareSize = SIZE / ((float) SIZE - 2);
 
 		int gridX = (int) Math.floor(terrainX / gridSquareSize);
 		int gridZ = (int) Math.floor(terrainZ / gridSquareSize);
 
-		if (gridX < 0 || gridZ < 0 || gridX >= heights.length - 1 || gridZ >= heights.length - 1)
+		if (gridX < 0 || gridZ < 0 || gridX >= SIZE - 2 || gridZ >= SIZE - 2)
 		{
 			return 0;
 		}
@@ -223,17 +201,46 @@ public class Terrain
 		float xCoord = (terrainX % gridSquareSize) / gridSquareSize;
 		float zCoord = (terrainZ % gridSquareSize) / gridSquareSize;
 
-		float height;
-
-		if (xCoord <= (1 - zCoord))
+		for (int worldY = (int)y + SIZE - 2; worldY >= y; worldY--)
 		{
-			height = MathUtils.barryCentric(new Vector3f(0, heights[gridX][gridZ], 0), new Vector3f(1, heights[gridX + 1][gridZ], 0), new Vector3f(0, heights[gridX][gridZ + 1], 1), new Vector2f(xCoord, zCoord));
-		} else
+			float closest2D = Float.MAX_VALUE;
+			Vector3f[] closestTri2D = null;
+			Pos3 currentPos = new Pos3(Math.round(worldX), Math.round(worldY), Math.round(worldZ));
+			if (!triangles.containsKey(currentPos))
+			{
+				System.out.println("Didn't find triangle at " + currentPos.x + ", " + currentPos.y + ", " + currentPos.z);
+				continue;
+			}
+			for (Vector3f[] triangle : triangles.get(currentPos))
+			{
+				float avgX = 0;
+				float avgZ = 0;
 
-		{
-			height = MathUtils.barryCentric(new Vector3f(1, heights[gridX + 1][gridZ], 0), new Vector3f(1, heights[gridX + 1][gridZ + 1], 1), new Vector3f(0, heights[gridX][gridZ + 1], 1), new Vector2f(xCoord, zCoord));
+				for (Vector3f vertex : triangle)
+				{
+					avgX += vertex.x;
+					avgZ += vertex.z;
+				}
+
+				avgX /= 3f;
+				avgZ /= 3f;
+
+				float dist = Math.abs(avgX - worldX) + Math.abs(avgZ - worldZ);
+
+				if (closest2D > dist)
+				{
+					closest2D = dist;
+					closestTri2D = triangle;
+				}
+			}
+
+			if (closestTri2D != null)
+			{
+				System.out.println("Comparing triangles: {" + closestTri2D[0] + ", " + closestTri2D[1] + ", " + closestTri2D[2]);
+				return MathUtils.barryCentric(closestTri2D[0], closestTri2D[1], closestTri2D[2], new Vector2f(xCoord, zCoord));
+			}
 		}
 
-		return height;
+		return 0;
 	}
 }
