@@ -15,7 +15,7 @@ import java.util.*;
 
 public class Terrain
 {
-	private static final int SIZE = 128;
+	public static final int SIZE = 128;
 	private static final long SEED = 0;
 	private static final int MAX_VERTS_PER_MESH = 30000;
 	private static final int VERTEX_COUNT = 128;
@@ -236,8 +236,11 @@ public class Terrain
 
 			if (closestTri2D != null)
 			{
-				System.out.println("Comparing triangles: {" + closestTri2D[0] + ", " + closestTri2D[1] + ", " + closestTri2D[2]);
-				return MathUtils.barryCentric(closestTri2D[0], closestTri2D[1], closestTri2D[2], new Vector2f(xCoord, zCoord));
+				//System.out.println("Comparing triangles: {" + closestTri2D[0] + ", " + closestTri2D[1] + ", " + closestTri2D[2]);
+				//return (closestTri2D[0].y + closestTri2D[1].y + closestTri2D[2].y) / 3f;
+
+				return MathUtils.barryCentric(new Vector3f(0, closestTri2D[0].y, 0), new Vector3f(0, closestTri2D[1].y, 1), new Vector3f(1, closestTri2D[2].y, 0), xCoord, zCoord);
+				//return MathUtils.barryCentric(closestTri2D[0], closestTri2D[1], closestTri2D[2], new Vector2f(xCoord, zCoord));
 			}
 		}
 

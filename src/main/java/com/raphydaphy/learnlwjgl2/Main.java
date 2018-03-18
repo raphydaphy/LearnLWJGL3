@@ -52,9 +52,9 @@ public class Main
 		treeMaterial.setReflectivity(0.1f);
 		TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
 		List<ModelTransform> trees = new ArrayList<>();
-		for (int i = 0; i < 500; i++)
+		for (int i = 0; i < Terrain.SIZE / 2; i++)
 		{
-			Vector3f treePos = new Vector3f(-rand.nextInt(800), -1f, -rand.nextInt(800));
+			Vector3f treePos = new Vector3f(rand.nextInt(Terrain.SIZE), -1f, rand.nextInt(Terrain.SIZE));
 			treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
 			Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
 			trees.add(new ModelTransform(treeTransform, treeModel));
@@ -67,7 +67,8 @@ public class Main
 
 		List<Light> lights = new ArrayList<>();
 
-		Light sun = new Light(new Vector3f(100000, 200000, 100000), new Vector3f(0.4f, 0.4f, 0.4f));
+		float sunBrightness = 0.8f;
+		Light sun = new Light(new Vector3f(50000, 100000, 100000), new Vector3f(sunBrightness, sunBrightness, sunBrightness));
 		lights.add(sun);
 		lights.add(new Light(new Vector3f(0, 35, 0), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
 		lights.add(new Light(new Vector3f(-300, 35, -300), new Vector3f(1, 1, 1), new Vector3f(1f, 0.01f, 0.002f)));
