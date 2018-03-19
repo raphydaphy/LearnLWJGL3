@@ -33,15 +33,18 @@ public class TerrainRenderer
         shader.loadShadowMapSpaceMatrix(toShadowSpace);
         for (Terrain terrain : terrains)
         {
-            loadModelMatrix(terrain);
+        	if (terrain.received)
+	        {
+	            loadModelMatrix(terrain);
 
-            // Draw the vertices bound in GL_ARRAY_BUFFER using indices from GL_ELEMENT_BUFFER
-            for (TerrainMesh mesh : terrain.getMeshes())
-            {
-                prepareTerrainMesh(mesh);
-                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-            }
-            unbindModel();
+	            // Draw the vertices bound in GL_ARRAY_BUFFER using indices from GL_ELEMENT_BUFFER
+	            for (TerrainMesh mesh : terrain.getMeshes())
+	            {
+	                prepareTerrainMesh(mesh);
+	                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+	            }
+	            unbindModel();
+	        }
         }
     }
 

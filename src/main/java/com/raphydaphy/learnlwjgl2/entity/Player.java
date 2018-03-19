@@ -53,7 +53,14 @@ public class Player
 
 		data.getTransform().move(xMove, upwardsSpeed * delta, zMove);
 
-		float ground = world.getChunkFromWorldCoords(data.getTransform().getPosition()).getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
+		float ground = 0;
+		Terrain terrain = world.getChunkFromWorldCoords(data.getTransform().getPosition());
+
+		if (terrain != null && terrain.received)
+		{
+			ground = terrain.getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
+		}
+
 		if (data.getTransform().getPosition().y < ground)
 		{
 			jumping = false;

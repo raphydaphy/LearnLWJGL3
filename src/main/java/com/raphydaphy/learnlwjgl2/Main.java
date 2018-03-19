@@ -16,9 +16,7 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.load.OBJLoader;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.FontRenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
-import main.java.com.raphydaphy.learnlwjgl2.terrain.MousePicker;
-import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
-import main.java.com.raphydaphy.learnlwjgl2.terrain.World;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.*;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector2f;
@@ -87,44 +85,47 @@ public class Main
 
 				Terrain terrain = world.getChunkFromWorldCoords(modifyX, player.data.getTransform().getPosition().y, modifyZ);
 
-				for (int y = Terrain.SIZE - 2; y > 0; y--)
+				if (terrain != null && terrain.received)
 				{
-					float density = terrain.getDensity(modifyX, y, modifyZ);
-					if (density > 0.5f)
+					for (int y = Terrain.SIZE - 2; y > 0; y--)
 					{
-						modifyY = y;
-						break;
-					}
-				}
-
-				if (modifyY < Float.MAX_VALUE)
-				{
-					int range = 5;
-
-					for (int mx = - range; mx < + range; mx++)
-					{
-						for (int mz = - range; mz < + range; mz++)
+						float density = terrain.getDensity(modifyX, y, modifyZ);
+						if (density > 0.5f)
 						{
-							float density = terrain.getDensity(modifyX + mx, modifyY, modifyZ + mz);
-
-							float factor = Math.abs(mx) + Math.abs(mz);
-
-							float remove = Math.max(0, 0.3f - (0.02f * factor));
-
-							if (!terrain.setDensity(modifyX + mx, modifyY, modifyZ + mz, density - remove))
-							{
-								System.out.println("sadness");
-							}
+							modifyY = y;
+							break;
 						}
 					}
 
-					terrain.regenerateTerrain(loader);
+					if (modifyY < Float.MAX_VALUE)
+					{
+						int range = 5;
+
+						for (int mx = -range; mx < +range; mx++)
+						{
+							for (int mz = -range; mz < +range; mz++)
+							{
+								float density = terrain.getDensity(modifyX + mx, modifyY, modifyZ + mz);
+
+								float factor = Math.abs(mx) + Math.abs(mz);
+
+								float remove = Math.max(0, 0.3f - (0.02f * factor));
+
+								if (!terrain.setDensity(modifyX + mx, modifyY, modifyZ + mz, density - remove))
+								{
+									System.out.println("sadness");
+								}
+							}
+						}
+
+						terrain.regenerateTerrain(loader);
+					}
 				}
 			}
 
 			for (Terrain terrain : world.getChunks().values())
 			{
-				if (!terrain.populated)
+				if (terrain.received && !terrain.populated)
 				{
 					for (int i = 0; i < Terrain.SIZE / 8; i++)
 					{
@@ -138,6 +139,16 @@ public class Main
 						}
 					}
 					terrain.populated = true;
+				}
+				else if (!terrain.received && terrain.meshesUnprocessed != null)
+				{
+					List<TerrainMesh> meshes = new ArrayList<>();
+					for (TerrainMeshData meshData : terrain.meshesUnprocessed)
+					{
+						meshes.add(meshData.generateMesh(loader));
+					}
+					terrain.setMeshes(meshes);
+					terrain.received = true;
 				}
 				renderer.processTerrain(terrain);
 			}

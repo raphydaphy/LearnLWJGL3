@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class World
 {
-	private static final int VIEW_DISTANCE = 3;
+	private static final int VIEW_DISTANCE = 10;
 	private Map<Pos3, Terrain> chunks;
 	private Loader loader;
 
@@ -33,9 +33,14 @@ public class World
 		{
 			return chunks.get(gridPos);
 		}
-		Terrain newChunk = new Terrain(gridPos.x, gridPos.y, gridPos.z, loader);
-		chunks.put(gridPos, newChunk);
-		return newChunk;
+		requestChunk(gridPos, loader);
+		return null;
+	}
+
+	public void requestChunk(Pos3 pos, Loader loader)
+	{
+		Terrain newChunk = new Terrain(pos.x, pos.y, pos.z, loader);
+		chunks.put(pos, newChunk);
 	}
 
 	public void updateVisibleChunks(Vector3f viewPosition)

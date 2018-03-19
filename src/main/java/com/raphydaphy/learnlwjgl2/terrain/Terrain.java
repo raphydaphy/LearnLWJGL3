@@ -25,7 +25,10 @@ public class Terrain
 	private Map<Pos3, List<Vector3f[]>> triangles;
 	private OpenSimplexNoise noise;
 
+	public boolean received = false;
 	public boolean populated = false;
+
+	public List<TerrainMeshData> meshesUnprocessed = null;
 
 	public Terrain(int gridX, int gridY, int gridZ, Loader loader)
 	{
@@ -35,7 +38,13 @@ public class Terrain
 		this.y = gridY * (SIZE - 1);
 		this.z = gridZ * (SIZE - 1);
 
-		meshes = generateMesh(loader);
+		new Thread(new Runnable() {
+			@Override
+			public void run()
+			{
+				meshesUnprocessed = generateMeshData();
+			}
+		}, "Terrain Generator").start();
 	}
 
 	public float getX()
@@ -51,6 +60,11 @@ public class Terrain
 	public List<TerrainMesh> getMeshes()
 	{
 		return meshes;
+	}
+
+	public void setMeshes(List<TerrainMesh> meshes)
+	{
+		this.meshes = meshes;
 	}
 
 	private float getDensity(int x, int y, int z, int octaves, float scale, float persistance, float lacunarity, Vector3f[] octaveOffsets)
@@ -79,7 +93,14 @@ public class Terrain
 
 	public void regenerateTerrain(Loader loader)
 	{
-		meshes = generateMesh(loader);
+		List<TerrainMesh> meshes = new ArrayList<>();
+
+		for (TerrainMeshData meshData : generateMeshData())
+		{
+			meshes.add(meshData.generateMesh(loader));
+		}
+
+		this.meshes = meshes;
 	}
 
 	public float getDensity(int x, int y, int z)
@@ -126,7 +147,7 @@ public class Terrain
 	}
 
 
-	private List<TerrainMesh> generateMesh(Loader loader)
+	private List<TerrainMeshData> generateMeshData()
 	{
 		Vector3f offset = new Vector3f(x,y,z);
 		if (voxels == null)
@@ -163,7 +184,7 @@ public class Terrain
 
 		int numMeshes = vertices.size() / MAX_VERTS_PER_MESH + 1;
 
-		List<TerrainMesh> models = new ArrayList<>();
+		List<TerrainMeshData> models = new ArrayList<>();
 
 		for (int mesh = 0; mesh < numMeshes; mesh++)
 		{
@@ -213,11 +234,11 @@ public class Terrain
 			}
 			if (models.size() < mesh)
 			{
-				models.get(mesh).updateTerrain(splitVerticesArray, splitNormalsArray, splitColorsArray, splitIndicesArray, loader);
+				//models.get(mesh).updateTerrain(splitVerticesArray, splitNormalsArray, splitColorsArray, splitIndicesArray, loader);
 			}
 			else
 			{
-				models.add(new TerrainMesh(splitVerticesArray,  splitNormalsArray, splitColorsArray,splitIndicesArray, loader));
+				models.add(new TerrainMeshData(splitVerticesArray,  splitNormalsArray, splitColorsArray,splitIndicesArray));
 			}
 		}
 

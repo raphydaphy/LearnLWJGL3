@@ -112,18 +112,21 @@ public class RenderManager
     // Adds all the models to the batch, but things will break if the list contains multiple different models!
     public void processSimilarObjects(List<ModelTransform> list)
     {
-        TexturedModel model = list.get(0).getModel();
-        List<ModelTransform> batch = objects.get(model);
-        if (batch != null)
-        {
-            batch.addAll(list);
-        }
-        else
-        {
-            batch = new ArrayList<>();
-            batch.addAll(list);
-            objects.put(model, batch);
-        }
+    	if (list.size() > 0)
+	    {
+	        TexturedModel model = list.get(0).getModel();
+	        List<ModelTransform> batch = objects.get(model);
+	        if (batch != null)
+	        {
+	            batch.addAll(list);
+	        }
+	        else
+	        {
+	            batch = new ArrayList<>();
+	            batch.addAll(list);
+	            objects.put(model, batch);
+	        }
+	    }
     }
 
     public void processObject(ModelTransform object)
