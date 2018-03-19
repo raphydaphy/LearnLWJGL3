@@ -50,7 +50,7 @@ public class RenderManager
         shadowMapRenderer = new ShadowMapMasterRenderer(camera);
     }
 
-    public void initProjection()
+    private void initProjection()
     {
         // Aspect ratio of the camera, based on the width and height so that it can scale with screen resolution
         float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
@@ -69,6 +69,19 @@ public class RenderManager
         projection.m23 = -1;
         projection.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustum_length);
         projection.m33 = 0;
+    }
+
+    public void recalculateProjection()
+    {
+        initProjection();
+
+        objectShader.bind();
+        objectShader.loadProjectionMatrix(projection);
+        objectShader.unbind();
+
+        terrainShader.bind();
+        terrainShader.loadProjectionMatrix(projection);
+        terrainShader.unbind();
     }
 
     private void prepare()

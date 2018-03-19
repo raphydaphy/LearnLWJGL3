@@ -6,13 +6,15 @@ import org.lwjgl.opengl.*;
 
 public class DisplayManager
 {
-    private static int WIDTH = 1080;
-    private static int HEIGHT = 720;
+	private static int FPS_CAP = 60;
 
-    private static int FPS_CAP = 60;
+    private static int width = 1080;
+    private static int height = 720;
 
     private static long lastFrameTime;
     private static float delta;
+
+    public static boolean hasResized;
 
     public static void createDisplay(String title)
     {
@@ -20,19 +22,31 @@ public class DisplayManager
 
         try
         {
-            Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
+            Display.setDisplayMode(new DisplayMode(width, height));
             Display.create(new PixelFormat(), attribs);
             Display.setTitle(title);
+            Display.setResizable(true);
         } catch (LWJGLException e)
         {
             e.printStackTrace();
         }
 
-        GL11.glViewport(0, 0, WIDTH, HEIGHT);
+        GL11.glViewport(0, 0, width, height);
     }
 
     public static void updateDisplay()
     {
+    	hasResized = false;
+
+    	if (Display.getWidth() != width || Display.getHeight() != height)
+	    {
+		    System.out.println("resized");
+	    	width = Display.getWidth();
+	    	height = Display.getHeight();
+	    	GL11.glViewport(0,0,width, height);
+	    	hasResized = true;
+	    }
+
         Display.sync(FPS_CAP);
         Display.update();
         long currentTime = getCurrentTime();

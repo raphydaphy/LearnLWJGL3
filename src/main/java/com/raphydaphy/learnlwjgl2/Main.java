@@ -168,6 +168,11 @@ public class Main
 			FontRenderManager.render();
 
 			DisplayManager.updateDisplay();
+
+			if (DisplayManager.hasResized)
+			{
+				renderer.recalculateProjection();
+			}
 		}
 
 		renderer.cleanup();
