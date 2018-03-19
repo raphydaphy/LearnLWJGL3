@@ -5,8 +5,13 @@ import main.java.com.raphydaphy.learnlwjgl2.render.ModelTransform;
 import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.DisplayManager;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.World;
+import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Player
 {
@@ -14,6 +19,7 @@ public class Player
 	private static final float TURN_SPEED = 160;
 	private static final float GRAVITY = -50;
 	private static final float JUMP_POWER = 30;
+	private static final float MIN_DIST_FOR_UPDATE = 10;
 
 	private float currentSpeed = 0;
 	private float currentTurnSpeed = 0;
@@ -23,12 +29,14 @@ public class Player
 
 	public ModelTransform data;
 
+	private Vector3f lastUpdatePos = null;
+
 	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale)
 	{
 		this.data = new ModelTransform(new Transform(position, rotX, rotY, rotZ, scale), model);
 	}
 
-	public void move(Terrain terrain)
+	public void move(World world)
 	{
 		float delta = DisplayManager.getFrameTimeSeconds();
 
@@ -45,7 +53,7 @@ public class Player
 
 		data.getTransform().move(xMove, upwardsSpeed * delta, zMove);
 
-		float ground = terrain.getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
+		float ground = world.getChunkFromWorldCoords(data.getTransform().getPosition()).getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
 		if (data.getTransform().getPosition().y < ground)
 		{
 			jumping = false;
@@ -53,6 +61,25 @@ public class Player
 			data.getTransform().getPosition().y = ground;
 		}
 
+		Vector3f pos = data.getTransform().getPosition();
+
+		if (lastUpdatePos == null)
+		{
+			world.updateVisibleChunks(pos);
+			return;
+		}
+
+		float distX = pos.x - lastUpdatePos.x;
+		float distY = pos.y - lastUpdatePos.y;
+		float distZ = pos.z - lastUpdatePos.z;
+
+		float dist = distX + distY + distZ;
+
+		if (dist >= MIN_DIST_FOR_UPDATE)
+		{
+			world.updateVisibleChunks(pos);
+			lastUpdatePos.set(pos);
+		}
 	}
 
 	private void doInput()

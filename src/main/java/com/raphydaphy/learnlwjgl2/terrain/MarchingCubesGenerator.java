@@ -2,7 +2,6 @@ package main.java.com.raphydaphy.learnlwjgl2.terrain;
 
 import main.java.com.raphydaphy.learnlwjgl2.util.MathUtils;
 import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
-import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.util.*;
@@ -148,19 +147,26 @@ public class MarchingCubesGenerator
 	private Vector3f getBlendColor(float height)
 	{
 		Region region = getRegion(height);
-		Vector3f colorA = getRegionColor(region.getID());
-		Vector3f colorB = getRegionColor(region.getID() + 1);
-		float alpha = Math.abs((float) MathUtils.clamp((region.maxHeight - height), 0f, 1f) - 1);
+		Vector3f colorA = region.color;
+		Vector3f colorB = Region.getByID(region.getID() + 1).color;
+		float alpha = Math.abs((float) MathUtils.clamp((region.maxHeight - height) / 2f, 0f, 1f) - 1);
 		Vector3f interpolated = lerp(colorA, colorB, alpha);
 		return interpolated;
 	}
 
 	private enum Region
 	{
-		SAND(6), GRASS(10), FOREST(13), STONE(15), CLIFF(18), SNOW(30);
+		SAND(6, new Vector3f(210 / 256f, 219 / 256f, 111 / 256f)),
+		GRASS(10, new Vector3f(0.0431372549f,0.91764705882f,0.23921568627f)),
+		FOREST(13, new Vector3f(13 / 255f, 132 / 255f, 21 / 255f)),
+		STONE(15, new Vector3f(112 / 255f, 112 / 255f, 112 / 255f)),
+		CLIFF(18, new Vector3f(68 / 255f, 68 / 255f, 68 / 255f)),
+		SNOW(30, new Vector3f(1, 1, 1));
 
 		private int id;
+		private static Map<Integer, Region> regions;
 		public final float maxHeight;
+		public final Vector3f color;
 
 		static
 		{
@@ -169,20 +175,38 @@ public class MarchingCubesGenerator
 			{
 				region.id = nextID++;
 			}
+
+			regions = new HashMap<>();
+
+			for (Region region : Region.values())
+			{
+				regions.put(region.id, region);
+			}
 		}
 
-		Region(float maxHeight)
+		Region(float maxHeight, Vector3f color)
 		{
 			this.maxHeight = maxHeight;
+			this.color = color;
 		}
 
 		public int getID()
 		{
 			return id;
 		}
+
+		public static Region getByID(int id)
+		{
+			if (regions.containsKey(id))
+			{
+				return regions.get(id);
+			}
+
+			return regions.get(regions.size() - 1);
+		}
 	}
 
-	private Region getRegion(float height)
+	private static Region getRegion(float height)
 	{
 		for (Region region : Region.values())
 		{
@@ -193,27 +217,6 @@ public class MarchingCubesGenerator
 		}
 
 		return Region.SNOW;
-	}
-
-	private Vector3f getRegionColor(int region)
-	{
-		switch(region)
-		{
-			case 0:
-				return new Vector3f(210 / 256f, 219 / 256f, 111 / 256f);
-			case 1:
-				return new Vector3f(0.0431372549f,0.91764705882f,0.23921568627f);
-			case 2:
-				return new Vector3f(13 / 255f, 132 / 255f, 21 / 255f);
-			case 3:
-				return new Vector3f(112 / 255f, 112 / 255f, 112 / 255f);
-			case 4:
-				return new Vector3f(68 / 255f, 68 / 255f, 68 / 255f);
-			default:
-				return new Vector3f(1f, 1f, 1f);
-		}
-
-
 	}
 
 	private float getOffset(float v1, float v2)

@@ -11,7 +11,7 @@ import java.util.*;
 public class Terrain
 {
 	public static final int SIZE = 32;
-	private static final long SEED = 0;
+	public static final long SEED = 0;
 	private static final int MAX_VERTS_PER_MESH = 30000;
 
 	private final float x;
@@ -25,13 +25,15 @@ public class Terrain
 	private Map<Pos3, List<Vector3f[]>> triangles;
 	private OpenSimplexNoise noise;
 
+	public boolean populated = false;
+
 	public Terrain(int gridX, int gridY, int gridZ, Loader loader)
 	{
 		noise = new OpenSimplexNoise(SEED);
 
-		this.x = gridX * SIZE;
-		this.y = gridY * SIZE;
-		this.z = gridZ * SIZE;
+		this.x = gridX * (SIZE - 1);
+		this.y = gridY * (SIZE - 1);
+		this.z = gridZ * (SIZE - 1);
 
 		meshes = generateMesh(loader);
 	}
@@ -141,7 +143,7 @@ public class Terrain
 				{
 					for (int z = 0; z < SIZE; z++)
 					{
-						float density = getDensity(x, y, z, octaves, 100, persistance, 2.01f, octaveOffsets);
+						float density = getDensity(x, y, z, octaves, 250, persistance, 2.01f, octaveOffsets);
 
 						voxels[x + y * SIZE + z * SIZE * SIZE] = density;
 					}
@@ -243,10 +245,9 @@ public class Terrain
 		{
 			float closest2D = Float.MAX_VALUE;
 			Vector3f[] closestTri2D = null;
-			Pos3 currentPos = new Pos3(Math.round(worldX), Math.round(worldY), Math.round(worldZ));
+			Pos3 currentPos = new Pos3(Math.round(terrainX), Math.round(worldY), Math.round(terrainZ));
 			if (!triangles.containsKey(currentPos))
 			{
-				System.out.println("Didn't find triangle at " + currentPos.x + ", " + currentPos.y + ", " + currentPos.z);
 				continue;
 			}
 			for (Vector3f[] triangle : triangles.get(currentPos))
@@ -263,7 +264,7 @@ public class Terrain
 				avgX /= 3f;
 				avgZ /= 3f;
 
-				float dist = Math.abs(avgX - worldX) + Math.abs(avgZ - worldZ);
+				float dist = Math.abs(avgX - terrainX) + Math.abs(avgZ - terrainZ);
 
 				if (closest2D > dist)
 				{

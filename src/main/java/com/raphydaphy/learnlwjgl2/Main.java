@@ -18,25 +18,23 @@ import main.java.com.raphydaphy.learnlwjgl2.renderengine.renderer.RenderManager;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.shader.Material;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.MousePicker;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
-import main.java.com.raphydaphy.learnlwjgl2.util.NoiseMapGenerator;
+import main.java.com.raphydaphy.learnlwjgl2.terrain.World;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Main
 {
 	public static void main(String[] args)
 	{
-		DisplayManager.createDisplay("LearnLWJGL2");
+		DisplayManager.createDisplay("Terrain Test");
 
 		Loader loader = new Loader();
-		Random rand = new Random(NoiseMapGenerator.SEED);
+		Random rand = new Random(Terrain.SEED);
 		FontRenderManager.init(loader);
 
 		FontType arial = new FontType(loader.loadTextureExact("src/main/resources/fonts/arial.png", "PNG"), new File("src/main/resources/fonts/arial.fnt"));
@@ -44,7 +42,8 @@ public class Main
 		text.setColour(1, 0, 1);
 		int colors = loader.loadTexture("colors");
 
-		Terrain terrain = new Terrain(0, 0,0, loader);
+		World world = new World(loader);
+
 
 		ModelData treeData = OBJLoader.loadOBJ("tree");
 		RawModel treeRaw = loader.loadToModel(treeData.getVertices(), treeData.getUVS(), treeData.getNormals(), treeData.getIndices());
@@ -53,13 +52,6 @@ public class Main
 		treeMaterial.setReflectivity(0.1f);
 		TexturedModel treeModel = new TexturedModel(treeRaw, treeMaterial);
 		List<ModelTransform> trees = new ArrayList<>();
-		for (int i = 0; i < Terrain.SIZE / 2; i++)
-		{
-			Vector3f treePos = new Vector3f(rand.nextInt(Terrain.SIZE), -1f, rand.nextInt(Terrain.SIZE));
-			treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
-			Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
-			trees.add(new ModelTransform(treeTransform, treeModel));
-		}
 
 		ModelData playerData = OBJLoader.loadOBJ("person");
 		RawModel playerRaw = loader.loadToModel(playerData.getVertices(), playerData.getUVS(), playerData.getNormals(), playerData.getIndices());
@@ -82,7 +74,7 @@ public class Main
 
 		while (!Display.isCloseRequested())
 		{
-			player.move(terrain);
+			player.move(world);
 			camera.move();
 
 			picker.update();
@@ -92,6 +84,8 @@ public class Main
 				int modifyX = (int)player.data.getTransform().getPosition().x;
 				int modifyY = Integer.MAX_VALUE;
 				int modifyZ = (int)player.data.getTransform().getPosition().z;
+
+				Terrain terrain = world.getChunkFromWorldCoords(modifyX, player.data.getTransform().getPosition().y, modifyZ);
 
 				for (int y = Terrain.SIZE - 2; y > 0; y--)
 				{
@@ -105,8 +99,6 @@ public class Main
 
 				if (modifyY < Float.MAX_VALUE)
 				{
-					System.out.println("dig at " + modifyY);
-
 					int range = 5;
 
 					for (int mx = - range; mx < + range; mx++)
@@ -117,7 +109,7 @@ public class Main
 
 							float factor = Math.abs(mx) + Math.abs(mz);
 
-							float remove = Math.max(0, 0.3f - (0.03f * factor));
+							float remove = Math.max(0, 0.3f - (0.02f * factor));
 
 							if (!terrain.setDensity(modifyX + mx, modifyY, modifyZ + mz, density - remove))
 							{
@@ -130,8 +122,25 @@ public class Main
 				}
 			}
 
-			renderer.processTerrain(terrain);
+			for (Terrain terrain : world.getChunks().values())
+			{
+				if (!terrain.populated)
+				{
+					for (int i = 0; i < Terrain.SIZE / 8; i++)
+					{
+						Vector3f treePos = new Vector3f(rand.nextInt(Terrain.SIZE) + terrain.getX(),-1f, rand.nextInt(Terrain.SIZE) + terrain.getZ());
+						treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
 
+						if (treePos.y > 0)
+						{
+							Transform treeTransform = new Transform(treePos, 0, rand.nextInt(360), 0, rand.nextInt(5) + 5);
+							trees.add(new ModelTransform(treeTransform, treeModel));
+						}
+					}
+					terrain.populated = true;
+				}
+				renderer.processTerrain(terrain);
+			}
 			renderer.processSimilarObjects(trees);
 
 			renderer.processObject(player.data);
