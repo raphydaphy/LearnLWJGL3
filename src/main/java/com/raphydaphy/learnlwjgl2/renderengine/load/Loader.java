@@ -3,11 +3,7 @@ package main.java.com.raphydaphy.learnlwjgl2.renderengine.load;
 import main.java.com.raphydaphy.learnlwjgl2.models.RawModel;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.opengl.TextureLoader;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -68,31 +64,22 @@ public class Loader
 
 	public int loadTexture(String filename)
 	{
-		return loadTextureExact("src/main/resources/textures/" + filename + ".png", "PNG");
+		return loadTextureExact("src/main/resources/textures/" + filename + ".png");
 	}
 
-	public int loadTextureExact(String file, String format)
+	public int loadTextureExact(String file)
 	{
-		// Using the SlickUtils texture loader to make things a bit easier
-		Texture texture = null;
-
-		try
-		{
-			// Load the texture from the default assets folder
-			texture = TextureLoader.getTexture(format, new FileInputStream(file));
-			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, -0.4f);
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		Texture texture = new Texture(file);
+		GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, -0.4f);
 
 		// Add the texture ID to the array in order to safely delete it on shutdown and return the ID
 		int textureID = texture.getTextureID();
 		textures.add(textureID);
 		return textureID;
 	}
+
 
 	public int storeDataInAttributeList(int attributeNumber, int dimensions, float[] data)
 	{

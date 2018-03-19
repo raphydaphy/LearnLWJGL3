@@ -35,7 +35,7 @@ public class Main
 		Random rand = new Random(Terrain.SEED);
 		FontRenderManager.init(loader);
 
-		FontType arial = new FontType(loader.loadTextureExact("src/main/resources/fonts/arial.png", "PNG"), new File("src/main/resources/fonts/arial.fnt"));
+		FontType arial = new FontType(loader.loadTextureExact("src/main/resources/fonts/arial.png"), new File("src/main/resources/fonts/arial.fnt"));
 		GUIText text = new GUIText("hello world",1, arial, new Vector2f(10, 0), 1f, true);
 		text.setColour(1, 0, 1);
 		int colors = loader.loadTexture("colors");
