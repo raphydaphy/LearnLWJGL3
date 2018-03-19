@@ -10,7 +10,7 @@ import java.util.*;
 
 public class Terrain
 {
-	public static final int SIZE = 32;
+	public static final int SIZE = 33;
 	public static final long SEED = 0;
 	private static final int MAX_VERTS_PER_MESH = 30000;
 
@@ -245,24 +245,21 @@ public class Terrain
 		return models;
 	}
 
-	public float getHeight(float worldX, float worldZ)
+	public float getHighestVoxel(float worldX, float worldZ)
 	{
 		float terrainX = worldX - this.x;
 		float terrainZ = worldZ - this.z;
-		float gridSquareSize = SIZE / ((float) SIZE - 2);
 
-		int gridX = (int) Math.floor(terrainX / gridSquareSize);
-		int gridZ = (int) Math.floor(terrainZ / gridSquareSize);
 
-		if (gridX < 0 || gridZ < 0 || gridX >= SIZE - 2 || gridZ >= SIZE - 2)
+		if (terrainX < 0 || terrainZ < 0 || terrainX >= SIZE - 1 || terrainZ >= SIZE - 1)
 		{
 			return 0;
 		}
-
+		float gridSquareSize = SIZE / ((float) SIZE - 2);
 		float xCoord = (terrainX % gridSquareSize) / gridSquareSize;
 		float zCoord = (terrainZ % gridSquareSize) / gridSquareSize;
 
-		for (int worldY = (int)y + SIZE - 2; worldY >= y; worldY--)
+		for (int worldY = (int)y + SIZE - 1; worldY >= y; worldY--)
 		{
 			float closest2D = Float.MAX_VALUE;
 			Vector3f[] closestTri2D = null;

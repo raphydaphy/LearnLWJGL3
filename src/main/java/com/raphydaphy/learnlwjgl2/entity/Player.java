@@ -6,19 +6,15 @@ import main.java.com.raphydaphy.learnlwjgl2.render.Transform;
 import main.java.com.raphydaphy.learnlwjgl2.renderengine.DisplayManager;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.Terrain;
 import main.java.com.raphydaphy.learnlwjgl2.terrain.World;
-import main.java.com.raphydaphy.learnlwjgl2.util.Pos3;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Player
 {
-	private static final float RUN_SPEED = 20;
-	private static final float TURN_SPEED = 160;
+	private static final float RUN_SPEED = 10;
+	private static final float TURN_SPEED = 100;
 	private static final float GRAVITY = -50;
-	private static final float JUMP_POWER = 30;
+	private static final float JUMP_POWER = 15;
 	private static final float MIN_DIST_FOR_UPDATE = 10;
 
 	private float currentSpeed = 0;
@@ -58,7 +54,7 @@ public class Player
 
 		if (terrain != null && terrain.received)
 		{
-			ground = terrain.getHeight(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
+			ground = terrain.getHighestVoxel(data.getTransform().getPosition().x, data.getTransform().getPosition().z);
 		}
 
 		if (data.getTransform().getPosition().y < ground)

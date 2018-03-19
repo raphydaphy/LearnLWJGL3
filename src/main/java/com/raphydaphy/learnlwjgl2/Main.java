@@ -123,6 +123,7 @@ public class Main
 				}
 			}
 
+			int processed = 0;
 			for (Terrain terrain : world.getChunks().values())
 			{
 				if (terrain.received && !terrain.populated)
@@ -130,7 +131,7 @@ public class Main
 					for (int i = 0; i < Terrain.SIZE / 8; i++)
 					{
 						Vector3f treePos = new Vector3f(rand.nextInt(Terrain.SIZE) + terrain.getX(),-1f, rand.nextInt(Terrain.SIZE) + terrain.getZ());
-						treePos.y = terrain.getHeight(treePos.x, treePos.z) - 1;
+						treePos.y = terrain.getHighestVoxel(treePos.x, treePos.z) - 1;
 
 						if (treePos.y > 0)
 						{
@@ -140,7 +141,7 @@ public class Main
 					}
 					terrain.populated = true;
 				}
-				else if (!terrain.received && terrain.meshesUnprocessed != null)
+				else if (processed < World.MAX_TERRAINS_PER_FRAME && !terrain.received && terrain.meshesUnprocessed != null)
 				{
 					List<TerrainMesh> meshes = new ArrayList<>();
 					for (TerrainMeshData meshData : terrain.meshesUnprocessed)
@@ -149,8 +150,13 @@ public class Main
 					}
 					terrain.setMeshes(meshes);
 					terrain.received = true;
+					processed++;
 				}
-				renderer.processTerrain(terrain);
+
+				if (terrain.received)
+				{
+					renderer.processTerrain(terrain);
+				}
 			}
 			renderer.processSimilarObjects(trees);
 

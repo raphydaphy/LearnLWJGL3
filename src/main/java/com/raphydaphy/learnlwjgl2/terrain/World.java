@@ -10,6 +10,7 @@ import java.util.Map;
 public class World
 {
 	private static final int VIEW_DISTANCE = 10;
+	public static final int MAX_TERRAINS_PER_FRAME = 1;
 	private Map<Pos3, Terrain> chunks;
 	private Loader loader;
 
@@ -27,7 +28,7 @@ public class World
 
 	public Terrain getChunkFromWorldCoords(float worldX, float worldY, float worldZ)
 	{
-		Pos3 gridPos = new Pos3( (int)Math.floor(worldX / Terrain.SIZE), (int) Math.floor(worldY / Terrain.SIZE), (int) Math.floor(worldZ / Terrain.SIZE));
+		Pos3 gridPos = new Pos3( (int)Math.floor(worldX / (Terrain.SIZE - 1)), (int) Math.floor(worldY / (Terrain.SIZE - 1)), (int) Math.floor(worldZ / (Terrain.SIZE - 1)));
 		gridPos.y = 0;
 		if (chunks.containsKey(gridPos))
 		{
